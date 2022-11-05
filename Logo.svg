@@ -8,7 +8,7 @@
     </linearGradient>
     <linearGradient id="color-4-1" gradientUnits="userSpaceOnUse" x1="350.002" y1="336.789" x2="350.002" y2="522.288" xlink:href="#color-4"/>
     <linearGradient gradientUnits="userSpaceOnUse" id="color-0" bx:pinned="true">
-      <stop style="stop-color: #222831;"/>
+      <stop style="stop-color: rgb(69, 69, 69);"/>
     </linearGradient>
   </defs>
   <g transform="matrix(-1.097897, 0, 0, 1.097299, 627.245239, -60.4328)" style="">

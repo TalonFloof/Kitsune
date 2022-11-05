@@ -1,6 +1,11 @@
 char executablePath[2048];
 
 #include <iostream>
+extern "C" {
+    #include <lua.h>
+    #include <lauxlib.h>
+    #include <lualib.h>
+}
 #include "KitsuneApplet.cpp"
 #include "KitsuneLuaCore.cpp"
 #include "api/LuaAPIs.cpp"

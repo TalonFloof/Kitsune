@@ -1,9 +1,3 @@
-extern "C" {
-    #include <lua.h>
-    #include <lauxlib.h>
-    #include <lualib.h>
-}
-
 void IncludeLuaAPIs(lua_State *);
 
 namespace Kitsune {

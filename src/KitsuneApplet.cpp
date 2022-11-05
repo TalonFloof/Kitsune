@@ -6,6 +6,16 @@ namespace Kitsune::Applet {
     static SDL_Surface* appletSurface = nullptr;
     static SDL_Renderer* appletRenderer = nullptr;
     static SDL_Texture* appletFont = nullptr;
+    std::string GetExecutableParentDirectory() {
+        lua_State* L = luaL_newstate();
+        luaL_openlibs(L);
+        lua_pushstring(L, executablePath);
+        lua_setglobal(L, "EXEC_FILE");
+        (void)luaL_dostring(L,"return EXEC_FILE:match(\"^(.+)[/\\\\].*$\")");
+        std::string path = std::string(lua_tostring(L, -1));
+        lua_close(L);
+        return path;
+    }
     void Initialize() {
         SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
         SDL_EnableScreenSaver();
@@ -17,19 +27,8 @@ namespace Kitsune::Applet {
         appletWindow = SDL_CreateWindow("Kitsune", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
         appletRenderer = SDL_CreateRenderer(appletWindow, -1, SDL_RENDERER_ACCELERATED);
         appletSurface = SDL_GetWindowSurface(appletWindow);
-        const char* parent = GetExecutableParentDirectory();
-        appletFont = IMG_LoadTexture(appletRenderer, "data/Assets/ZapLightFont.png");
-    }
-    const char* GetExecutableParentDirectory() {
-        lua_State* L = luaL_newstate();
-        luaL_openlibs(L);
-        lua_pushstring(L, executablePath);
-        lua_setglobal(L, "EXEC_FILE");
-        (void)luaL_dostring(L,"return EXEC_FILE:match(\"^(.+)[/\\\\].*$\")");
-        const char* path = lua_tostring(L, -1);
-        lua_close(L);
-        free(L);
-        return path;
+        std::string parent = GetExecutableParentDirectory();
+        appletFont = IMG_LoadTexture(appletRenderer, (parent+"/data/Assets/ZapLightFont.png").c_str());
     }
     void Show() {
         SDL_ShowWindow(appletWindow);
