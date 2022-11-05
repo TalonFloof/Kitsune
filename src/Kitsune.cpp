@@ -27,9 +27,8 @@ int main() {
         strcpy(executablePath, "./Kitsune")
     #endif
 
-    Kitsune::KitsuneApplet kitsune;
     Kitsune::KitsuneLuaCore luaCore;
-    kitsune.show();
+    Kitsune::Applet::Initialize();
     luaCore.runKitsuneCore();
     return 0;
 }
