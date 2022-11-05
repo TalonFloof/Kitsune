@@ -1,7 +1,9 @@
 #include <unordered_map>
+#include <vector>
 
 namespace Kitsune::API::Renderer {
     static std::unordered_map<const char*, SDL_Surface*> TextureRegistry;
+    static std::vector<SDL_Rect> ClipStack;
 
     int ClearScreen(lua_State* L) {
         int r,g,b,a;
@@ -55,6 +57,38 @@ namespace Kitsune::API::Renderer {
         }
         return 0;
     }
+    int PushClipArea(lua_State* L) {
+        SDL_Rect area;
+        if(SDL_RenderIsClipEnabled(Kitsune::Applet::appletRenderer)) {
+            SDL_RenderGetClipRect(Kitsune::Applet::appletRenderer,&area);
+            ClipStack.push_back(area);
+        }
+        area.x = luaL_checknumber(L, 1);
+        area.y = luaL_checknumber(L, 2);
+        area.w = luaL_checknumber(L, 3);
+        area.h = luaL_checknumber(L, 4);
+        SDL_RenderSetClipRect(Kitsune::Applet::appletRenderer, &area);
+        return 0;
+    }
+    int PopClipArea(lua_State* L) {
+        if(SDL_RenderIsClipEnabled(Kitsune::Applet::appletRenderer)) {
+            if(ClipStack.empty()) {
+                SDL_RenderSetClipRect(Kitsune::Applet::appletRenderer, NULL);
+            } else {
+                SDL_RenderSetClipRect(Kitsune::Applet::appletRenderer, &ClipStack.back());
+                ClipStack.pop_back();
+            }
+        }
+        return 0;
+    }
+    int ClearClipStack(lua_State* L) {
+        SDL_RenderSetClipRect(Kitsune::Applet::appletRenderer, NULL);
+        ClipStack.clear();
+        return 0;
+    }
+    int LoadImage(lua_State* L) {
+        
+    }
     int Invalidate(lua_State* L) {
         SDL_RenderPresent(Kitsune::Applet::appletRenderer);
         return 0;
@@ -64,6 +98,9 @@ namespace Kitsune::API::Renderer {
         {"Clear", ClearScreen},
         {"Rect", DrawRect},
         {"Text", DrawText},
+        {"PushClipArea", PushClipArea},
+        {"PopClipArea", PopClipArea},
+        {"ClearClipStack", ClearClipStack},
         {"Invalidate", Invalidate},
         {NULL, NULL}
     };
