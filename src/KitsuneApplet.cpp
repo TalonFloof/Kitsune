@@ -14,7 +14,7 @@ namespace Kitsune::Applet {
         atexit(SDL_Quit);
         SDL_DisplayMode dm;
         SDL_GetCurrentDisplayMode(0, &dm);
-        appletWindow = SDL_CreateWindow("Kitsune", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w * 0.8, dm.h * 0.8, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
+        appletWindow = SDL_CreateWindow("Kitsune", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
         appletRenderer = SDL_CreateRenderer(appletWindow, -1, SDL_RENDERER_ACCELERATED);
         appletSurface = SDL_GetWindowSurface(appletWindow);
         appletFont = IMG_LoadTexture(appletRenderer, "data/ZapLightFont.png");

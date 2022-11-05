@@ -1,11 +1,15 @@
 local core = {}
 
 core.Redraw = true
+core.Cursor = "Default"
 
 function core.Initialize()
-    local StatusBar = require "KitsuneStatusBar"
+    local StatusBar = require "Kitsune.StatusBar"
+    local DocView = require "Kitsune.DocumentView"
     core.StatusBar = StatusBar()
-    Renderer.Clear(64,62,63,255)
+    core.DocumentView = DocView()
+    core.DocumentView.size.w = table.pack(Applet.GetResolution())[1]
+    core.DocumentView.size.h = table.pack(Applet.GetResolution())[2]-32
     core.StatusBar.pos.y = table.pack(Applet.GetResolution())[2]-32
     core.StatusBar.size.w = table.pack(Applet.GetResolution())[1]
 end
@@ -14,8 +18,9 @@ function core.Run()
     local frameStart = Applet.GetMillis()
     while true do
         if core.Redraw then
-            Renderer.Clear(64,62,63,255)
+            core.DocumentView:draw()
             core.StatusBar:draw()
+            Renderer.Invalidate()
             core.Redraw = false
         end
         local event = table.pack(Applet.PollEvent())
@@ -23,9 +28,14 @@ function core.Run()
             if event[1] == "AppletQuit" then
                 break
             elseif event[1] == "AppletResized" then
+                core.DocumentView.size.w = event[2]
+                core.DocumentView.size.h = event[3]-32
                 core.StatusBar.pos.y = event[3]-32
                 core.StatusBar.size.w = event[2]
                 core.Redraw = true
+            elseif event[1] == "AppletMouseMoved" then
+                core.DocumentView:onMouseMove(event[2],event[3])
+                core.StatusBar:onMouseMove(event[2],event[3])
             end
         end
         if Applet.GetMillis() - frameStart >= 1 / 60 then

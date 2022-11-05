@@ -90,6 +90,37 @@ namespace Kitsune::API::Applet {
         return 2;
     }
 
+    static SDL_Cursor* CursorBuffer[SDL_SYSTEM_CURSOR_HAND + 1];
+
+    static const char *CursorNames[] = {
+        "Default",
+        "Caret",
+        "ResizeHorizontal",
+        "ResizeVertical",
+        "Hand",
+        NULL
+    };
+
+    static const int CursorEnums[] = {
+        SDL_SYSTEM_CURSOR_ARROW,
+        SDL_SYSTEM_CURSOR_IBEAM,
+        SDL_SYSTEM_CURSOR_SIZEWE,
+        SDL_SYSTEM_CURSOR_SIZENS,
+        SDL_SYSTEM_CURSOR_HAND
+    };
+
+    int SetCursor(lua_State *L) {
+        int Option = luaL_checkoption(L, 1, "Default", CursorNames);
+        int Enum = CursorEnums[Option];
+        SDL_Cursor *cursor = CursorBuffer[Enum];
+        if(!cursor) {
+            cursor = SDL_CreateSystemCursor((SDL_SystemCursor)Enum);
+            CursorBuffer[Enum] = cursor;
+        }
+        SDL_SetCursor(cursor);
+        return 0;
+    }
+
     int Sleep(lua_State *L) {
         double n = luaL_checknumber(L, 1);
         SDL_Delay(n * 1000);
@@ -100,6 +131,7 @@ namespace Kitsune::API::Applet {
         {"PollEvent", PollEvent},
         {"GetMillis", GetMillis},
         {"GetResolution", GetResolution},
+        {"SetCursor", SetCursor},
         {"Sleep", Sleep},
         {NULL, NULL}
     };

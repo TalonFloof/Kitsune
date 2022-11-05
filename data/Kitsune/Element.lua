@@ -1,6 +1,6 @@
-local Core = require "KitsuneCore"
-local Object = require "KitsuneObject"
-local Utils = require "KitsuneUtil"
+local Core = require "Kitsune"
+local Object = require "Kitsune.Object"
+local Utils = require "Kitsune.Util"
 
 local Element = Object:extend()
 
@@ -9,6 +9,7 @@ function Element:new()
     self.size = { w = 0, h = 0 }
     self.scrollPos = { x = 0, y = 0, dest = { x = 0, y = 0 } }
     self.isScrollable = false
+    self.cursor = "Default"
 end
 
 function Element:move_to(originTable, destination, tableKey, speed)
@@ -31,6 +32,13 @@ function Element:drawBackground(r,g,b,a)
     local x, y = self.pos.x, self.pos.y
     local w, h = self.size.w, self.size.h
     Renderer.Rect(x, y, w + x % 1, h + y % 1, r, g, b, a)
+end
+
+function Element:onMouseMove(x,y)
+    if x >= self.pos.x and x <= self.pos.x+self.size.w and y >= self.pos.y and y <= self.pos.y+self.size.h and Core.Cursor ~= self.cursor then
+        Core.Cursor = self.cursor
+        Applet.SetCursor(self.cursor)
+    end
 end
 
 function Element:draw() end

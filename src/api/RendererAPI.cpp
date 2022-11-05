@@ -11,7 +11,6 @@ namespace Kitsune::API::Renderer {
         a = luaL_checknumber(L, 4);
         SDL_SetRenderDrawColor(Kitsune::Applet::appletRenderer, r, g, b, a);
         SDL_RenderClear(Kitsune::Applet::appletRenderer);
-        SDL_RenderPresent(Kitsune::Applet::appletRenderer);
         return 0;
     }
     int DrawRect(lua_State* L) {
@@ -27,7 +26,6 @@ namespace Kitsune::API::Renderer {
         a = luaL_checknumber(L, 8);
         SDL_SetRenderDrawColor(Kitsune::Applet::appletRenderer, r, g, b, a);
         SDL_RenderFillRect(Kitsune::Applet::appletRenderer, &coords);
-        SDL_RenderPresent(Kitsune::Applet::appletRenderer);
         return 0;
     }
     void DrawGlyph(int x, int y, int scale, uint8_t glyph, int r, int g, int b) {
@@ -55,6 +53,9 @@ namespace Kitsune::API::Renderer {
         for(int i=0; i < strlen(text); i++) {
             DrawGlyph(x+(i*(8*scale)),y,scale,(uint8_t)text[i],r,g,b);
         }
+        return 0;
+    }
+    int Invalidate(lua_State* L) {
         SDL_RenderPresent(Kitsune::Applet::appletRenderer);
         return 0;
     }
@@ -63,6 +64,7 @@ namespace Kitsune::API::Renderer {
         {"Clear", ClearScreen},
         {"Rect", DrawRect},
         {"Text", DrawText},
+        {"Invalidate", Invalidate},
         {NULL, NULL}
     };
 
