@@ -2,12 +2,13 @@ local core = {}
 
 core.Redraw = true
 core.Cursor = "Default"
+core.MousePos = {x=0,y=0}
 
 function core.Initialize()
     local StatusBar = require "Kitsune.StatusBar"
     local DocView = require "Kitsune.DocumentView"
     core.StatusBar = StatusBar()
-    core.DocumentView = DocView()
+    core.DocumentView = DocView("data/Kitsune/Element.lua")
     core.DocumentView.size.w = table.pack(Applet.GetResolution())[1]
     core.DocumentView.size.h = table.pack(Applet.GetResolution())[2]-32
     core.StatusBar.pos.y = table.pack(Applet.GetResolution())[2]-32
@@ -40,7 +41,14 @@ function core.Run()
                 elseif event[1] == "AppletMouseMoved" then
                     core.DocumentView:onMouseMove(event[2],event[3])
                     core.StatusBar:onMouseMove(event[2],event[3])
+                    core.MousePos.x = event[2]
+                    core.MousePos.y = event[3]
+                elseif event[1] == "AppletMouseScroll" then
+                    core.DocumentView:onMouseScroll(core.MousePos.x,core.MousePos.y,event[2])
+                    core.StatusBar:onMouseScroll(core.MousePos.x,core.MousePos.y,event[2])
                 end
+            else
+                Applet.Sleep(math.max(0, 1 / 60 - (Applet.GetMillis() - frameStart)))
             end
         end
         if Applet.GetMillis() - frameStart >= 1 / 60 then
