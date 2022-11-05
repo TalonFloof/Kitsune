@@ -12,6 +12,9 @@ function core.Initialize()
     core.DocumentView.size.h = table.pack(Applet.GetResolution())[2]-32
     core.StatusBar.pos.y = table.pack(Applet.GetResolution())[2]-32
     core.StatusBar.size.w = table.pack(Applet.GetResolution())[1]
+    if not Renderer.LoadImage("Kitsune:LogoSymbolic",EXEC_DIR.."/data/Assets/KitsuneSymbolic.png") then
+        error("Failed to load image Kitsune:LogoSymbolic!")
+    end
 end
 
 function core.Run()

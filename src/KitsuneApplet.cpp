@@ -29,6 +29,7 @@ namespace Kitsune::Applet {
         appletSurface = SDL_GetWindowSurface(appletWindow);
         std::string parent = GetExecutableParentDirectory();
         appletFont = IMG_LoadTexture(appletRenderer, (parent+"/data/Assets/ZapLightFont.png").c_str());
+        SDL_SetTextureScaleMode(appletFont,SDL_ScaleModeNearest);
     }
     void Show() {
         SDL_ShowWindow(appletWindow);

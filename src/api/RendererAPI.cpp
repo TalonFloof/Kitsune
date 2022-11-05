@@ -1,8 +1,9 @@
+#include <string>
 #include <unordered_map>
 #include <vector>
 
 namespace Kitsune::API::Renderer {
-    static std::unordered_map<const char*, SDL_Surface*> TextureRegistry;
+    static std::unordered_map<std::string, SDL_Surface*> TextureRegistry;
     static std::vector<SDL_Rect> ClipStack;
 
     int ClearScreen(lua_State* L) {
@@ -87,7 +88,38 @@ namespace Kitsune::API::Renderer {
         return 0;
     }
     int LoadImage(lua_State* L) {
-        
+        std::string name = std::string(luaL_checkstring(L, 1));
+        SDL_Surface* image = IMG_Load(luaL_checkstring(L, 2));
+        if(image == NULL) {
+            lua_pushboolean(L,0);
+        } else {
+            TextureRegistry[name] = image;
+            lua_pushboolean(L,1);
+        }
+        return 1;
+    }
+    int DrawImage(lua_State* L) {
+        std::string name = std::string(luaL_checkstring(L, 1));
+        if(TextureRegistry.find(name) != TextureRegistry.end()) {
+            SDL_Rect dst;
+            dst.x = luaL_checknumber(L, 2);
+            dst.y = luaL_checknumber(L, 3);
+            dst.w = luaL_checknumber(L, 4);
+            dst.h = luaL_checknumber(L, 5);
+            SDL_Texture* tex = SDL_CreateTextureFromSurface(Kitsune::Applet::appletRenderer,TextureRegistry[name]);
+            SDL_SetTextureScaleMode(tex,SDL_ScaleModeLinear);
+            SDL_RenderCopy(Kitsune::Applet::appletRenderer, tex, NULL, &dst);
+            SDL_DestroyTexture(tex);
+        }
+        return 0;
+    }
+    int CloseImage(lua_State* L) {
+        std::string name = std::string(luaL_checkstring(L, 1));
+        if(TextureRegistry.find(name) != TextureRegistry.end()) { 
+            SDL_FreeSurface(TextureRegistry[name]);
+            delete TextureRegistry[name];
+        }
+        return 0;
     }
     int Invalidate(lua_State* L) {
         SDL_RenderPresent(Kitsune::Applet::appletRenderer);
@@ -98,6 +130,9 @@ namespace Kitsune::API::Renderer {
         {"Clear", ClearScreen},
         {"Rect", DrawRect},
         {"Text", DrawText},
+        {"LoadImage", LoadImage},
+        {"Image", DrawImage},
+        {"CloseImage", CloseImage},
         {"PushClipArea", PushClipArea},
         {"PopClipArea", PopClipArea},
         {"ClearClipStack", ClearClipStack},
