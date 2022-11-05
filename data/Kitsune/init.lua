@@ -8,12 +8,15 @@ function core.Initialize()
     local StatusBar = require "Kitsune.StatusBar"
     local DocView = require "Kitsune.DocumentView"
     core.StatusBar = StatusBar()
-    core.DocumentView = DocView("data/Kitsune/Element.lua")
+    core.DocumentView = DocView()
     core.DocumentView.size.w = table.pack(Applet.GetResolution())[1]
     core.DocumentView.size.h = table.pack(Applet.GetResolution())[2]-32
     core.StatusBar.pos.y = table.pack(Applet.GetResolution())[2]-32
     core.StatusBar.size.w = table.pack(Applet.GetResolution())[1]
-    if not Renderer.LoadImage("Kitsune:LogoSymbolic",EXEC_DIR.."/data/Assets/KitsuneSymbolic.png") then
+    if not Renderer.LoadImage("Kitsune:Logo",EXEC_DIR.."/data/Assets/Kitsune.svg") then
+        error("Failed to load image Kitsune:Logo!")
+    end
+    if not Renderer.LoadImage("Kitsune:LogoSymbolic",EXEC_DIR.."/data/Assets/KitsuneSymbolic.svg") then
         error("Failed to load image Kitsune:LogoSymbolic!")
     end
 end

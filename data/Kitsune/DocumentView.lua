@@ -27,9 +27,22 @@ end
 function DocumentView:draw()
     Renderer.PushClipArea(self.pos.x,self.pos.y,self.size.w,self.size.h)
     self:drawBackground(0x34,0x32,0x33,255)
-    local min, max = self:getLineRange()
-    for i=min,max do
-        Renderer.Text(0,((i-1)*16)-self.scrollPos.y,1,self.document.lines[i],255,255,255)
+    if self.document ~= nil then
+        self.cursor = "Caret"
+        local min, max = self:getLineRange()
+        for i=min,max do
+            Renderer.Text(0,((i-1)*16)-self.scrollPos.y,1,self.document.lines[i],255,255,255)
+        end
+    else
+        self.cursor = "Default"
+        local imageSize = math.floor((self.size.h+32) / 4)
+        Renderer.Image("Kitsune:Logo",(self.size.w/2)-(imageSize/2)+self.pos.x,(self.size.h/2)-(imageSize/2)+self.pos.y,imageSize,imageSize)
+        local cmdBarMsg = "To begin, press Ctrl+Shift+P to see a list of commands"
+        if self.size.w >= #cmdBarMsg*16 then
+            Renderer.Text((self.size.w/2)-(#cmdBarMsg*8)+self.pos.x,(self.size.h/2)+(imageSize/2)+self.pos.y,2,cmdBarMsg,0xc4,0xb3,0x98)
+        else
+            Renderer.Text((self.size.w/2)-(#cmdBarMsg*4)+self.pos.x,(self.size.h/2)+(imageSize/2)+self.pos.y,1,cmdBarMsg,0xc4,0xb3,0x98)
+        end
     end
     Renderer.PopClipArea()
 end
