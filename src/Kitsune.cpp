@@ -29,6 +29,7 @@ int main() {
 
     Kitsune::KitsuneLuaCore luaCore;
     Kitsune::Applet::Initialize();
+    Kitsune::Applet::Show();
     luaCore.runKitsuneCore();
     return 0;
 }

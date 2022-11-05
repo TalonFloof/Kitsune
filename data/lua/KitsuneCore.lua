@@ -1,7 +1,7 @@
 local core = {}
 
 function core.Initialize()
-
+    Renderer.Clear(0,0,0,255)
 end
 
 function core.Run()
