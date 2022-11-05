@@ -30,7 +30,7 @@ namespace Kitsune::API::Renderer {
         SDL_RenderPresent(Kitsune::Applet::appletRenderer);
         return 0;
     }
-    void DrawGlyph(int x, int y, uint8_t glyph, int r, int g, int b) {
+    void DrawGlyph(int x, int y, int scale, uint8_t glyph, int r, int g, int b) {
         SDL_Rect src, dst;
         src.x = ((int)glyph) * 8;
         src.y = 0;
@@ -38,21 +38,22 @@ namespace Kitsune::API::Renderer {
         src.h = 16;
         dst.x = x;
         dst.y = y;
-        dst.w = 8;
-        dst.h = 16;
+        dst.w = 8*scale;
+        dst.h = 16*scale;
         SDL_SetTextureColorMod(Kitsune::Applet::appletFont, r, g, b);
         SDL_RenderCopy(Kitsune::Applet::appletRenderer, Kitsune::Applet::appletFont, &src, &dst);
     }
     int DrawText(lua_State* L) {
-        int x,y,r,g,b;
+        int x,y,scale,r,g,b;
         x = luaL_checknumber(L, 1);
         y = luaL_checknumber(L, 2);
-        const char *text = luaL_checkstring(L, 3);
-        r = luaL_checknumber(L, 4);
-        g = luaL_checknumber(L, 5);
-        b = luaL_checknumber(L, 6);
+        scale = luaL_checknumber(L, 3);
+        const char *text = luaL_checkstring(L, 4);
+        r = luaL_checknumber(L, 5);
+        g = luaL_checknumber(L, 6);
+        b = luaL_checknumber(L, 7);
         for(int i=0; i < strlen(text); i++) {
-            DrawGlyph(x+(i*8),y,(uint8_t)text[i],r,g,b);
+            DrawGlyph(x+(i*(8*scale)),y,scale,(uint8_t)text[i],r,g,b);
         }
         SDL_RenderPresent(Kitsune::Applet::appletRenderer);
         return 0;

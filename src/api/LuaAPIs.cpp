@@ -1,8 +1,8 @@
-#include "AppletEventAPI.cpp"
+#include "AppletAPI.cpp"
 #include "RendererAPI.cpp"
 
 static const luaL_Reg libs[] = {
-  {"AppletEvents", Kitsune::API::AppletEvents::LuaOpen},
+  {"Applet", Kitsune::API::Applet::LuaOpen},
   {"Renderer", Kitsune::API::Renderer::LuaOpen},
   {NULL, NULL}
 };

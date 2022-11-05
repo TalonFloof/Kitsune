@@ -1,5 +1,5 @@
-namespace Kitsune::API::AppletEvents {
-    static char* GetKeyName(char *dst, int sym) {
+namespace Kitsune::API::Applet {
+    char* GetKeyName(char *dst, int sym) {
         strcpy(dst, SDL_GetKeyName(sym));
         char *p = dst;
         while (*p) {
@@ -9,7 +9,7 @@ namespace Kitsune::API::AppletEvents {
         return dst;
     }
 
-    static int PollEvent(lua_State *L) {
+    int PollEvent(lua_State *L) {
         char buffer[16];
         SDL_Event e;
     poll:
@@ -77,8 +77,30 @@ namespace Kitsune::API::AppletEvents {
         return 0;
     }
 
+    int GetMillis(lua_State *L) {
+        lua_pushnumber(L, ((double)SDL_GetTicks64())/1000);
+        return 1;
+    }
+
+    int GetResolution(lua_State *L) {
+        int w,h;
+        SDL_GetWindowSize(Kitsune::Applet::appletWindow, &w, &h);
+        lua_pushnumber(L, w);
+        lua_pushnumber(L, h);
+        return 2;
+    }
+
+    int Sleep(lua_State *L) {
+        double n = luaL_checknumber(L, 1);
+        SDL_Delay(n * 1000);
+        return 0;
+    }
+
     static const luaL_Reg lib[] = {
         {"PollEvent", PollEvent},
+        {"GetMillis", GetMillis},
+        {"GetResolution", GetResolution},
+        {"Sleep", Sleep},
         {NULL, NULL}
     };
 
