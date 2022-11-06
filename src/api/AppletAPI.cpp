@@ -78,7 +78,11 @@ namespace Kitsune::API::Applet {
     }
 
     int GetMillis(lua_State *L) {
-        lua_pushnumber(L, ((double)SDL_GetTicks64())/1000);
+        #if _WIN32
+            lua_pushnumber(L, ((double)SDL_GetTicks())/1000);
+        #else
+            lua_pushnumber(L, ((double)SDL_GetTicks64())/1000);
+        #endif
         return 1;
     }
     uint32_t fullscreen = 0;

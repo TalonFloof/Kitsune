@@ -12,13 +12,7 @@ namespace Kitsune {
                 lua_pushstring(this->curLuaState, executablePath);
                 lua_setglobal(this->curLuaState, "EXEC_FILE");
 
-                #if _WIN32
-                    float dpi;
-                    SDL_GetDisplayDPI(0, NULL, &dpi, NULL);
-                    lua_pushnumber(this->curLuaState,dpi / 96.0);
-                #else
-                    lua_pushnumber(this->curLuaState,1.0);
-                #endif
+                lua_pushnumber(this->curLuaState,1.0);
                 lua_setglobal(this->curLuaState, "SCALE");
                 
                 lua_pushstring(this->curLuaState, path);

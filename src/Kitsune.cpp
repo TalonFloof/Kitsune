@@ -20,7 +20,7 @@ extern "C" {
 
 int main(int argc, char** argv) {
     #if _WIN32
-        int size = GetModuleFileName(NULL, executablePath, 2047);
+        int size = GetModuleFileNameA(NULL, executablePath, 2047);
         executablePath[size] = '\0';
     #elif __linux__
         int size = readlink("/proc/self/exe", executablePath, 2047);
