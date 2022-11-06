@@ -53,11 +53,16 @@ function CommandBar:draw()
     if self.ticks % 48 < 24 then
         Renderer.Rect(8+(#(self.promptMsg..self.prompt)*8),self.pos.y+self.size.h-(math.min(32,self.size.h)/2+8),2,16,0x61,0xef,0xce,255)
     end
+    local maxLength = math.floor(self.size.w*.75)//8
     for i,j in ipairs(self.suggestions) do
         if #self.suggestions-(self.suggestionIndex-1) == i then
             Renderer.Rect(0,self.pos.y+((i-1)*16),self.size.w,16,0x38,0x36,0x37,255)
         end
-        Renderer.Text(0,self.pos.y+((i-1)*16),1,j.text,0xc4,0xb3,0x98)
+        if #j.text > maxLength then
+            Renderer.Text(0,self.pos.y+((i-1)*16),1,"..."..j.text:sub(#j.text-maxLength+3,#j.text),0xc4,0xb3,0x98)
+        else
+            Renderer.Text(0,self.pos.y+((i-1)*16),1,j.text,0xc4,0xb3,0x98)
+        end
         local str = "Score: "..tostring(j.score)
         Renderer.Text(self.size.w-(#str*8),self.pos.y+((i-1)*16),1,str,0x61,0x5d,0x5f)
     end
@@ -104,9 +109,15 @@ function CommandBar:onKeyPress(k)
             Core.Redraw = true
         elseif k == "up" then
             self.suggestionIndex = math.max(1,math.min(#self.suggestions,self.suggestionIndex+1))
+            if self.suggestions[#self.suggestions-(self.suggestionIndex-1)] then
+                self.prompt = self.suggestions[#self.suggestions-(self.suggestionIndex-1)].text
+            end
             Core.Redraw = true
         elseif k == "down" then
             self.suggestionIndex = math.max(1,self.suggestionIndex-1)
+            if self.suggestions[#self.suggestions-(self.suggestionIndex-1)] then
+                self.prompt = self.suggestions[#self.suggestions-(self.suggestionIndex-1)].text
+            end
             Core.Redraw = true
         end
     end

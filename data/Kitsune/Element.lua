@@ -14,6 +14,9 @@ end
 
 function Element:move_to(originTable, destination, tableKey, speed)
     if math.abs(originTable[tableKey] - destination) < 0.5 then
+        if math.abs(originTable[tableKey] - destination) ~= 0 then
+            Core.Redraw = true
+        end
         originTable[tableKey] = destination
     else
         originTable[tableKey] = Utils.lerp(originTable[tableKey], destination, speed)

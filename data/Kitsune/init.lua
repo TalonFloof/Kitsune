@@ -66,6 +66,7 @@ function core.Run()
                 elseif event[1] == "AppletKeyDown" then
                     Keybind.onKeyPress(event[2])
                     core.CommandBar:onKeyPress(event[2])
+                    core.DocumentView:onKeyPress(event[2])
                 elseif event[1] == "AppletKeyUp" then
                     Keybind.onKeyRelease(event[2])
                 elseif event[1] == "AppletText" then

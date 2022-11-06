@@ -17,6 +17,13 @@ namespace Kitsune {
                 
                 lua_pushstring(this->curLuaState, path);
                 lua_setglobal(this->curLuaState, "STARTUP_FILE");
+
+                #if _WIN32
+                    lua_pushstring(this->curLuaState, "\\");
+                #else
+                    lua_pushstring(this->curLuaState, "/");
+                #endif
+                lua_setglobal(this->curLuaState, "SEPERATOR");
             }
             void runKitsuneCore() {
                 (void)luaL_dostring(this->curLuaState,
