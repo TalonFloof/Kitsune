@@ -83,7 +83,7 @@ namespace Kitsune::API::Applet {
     }
     uint32_t fullscreen = 0;
     int ToggleFullscreen(lua_State *L) {
-        fullscreen = fullscreen==0?SDL_WINDOW_FULLSCREEN:0;
+        fullscreen = fullscreen==0?SDL_WINDOW_FULLSCREEN_DESKTOP:0;
         SDL_SetWindowFullscreen(Kitsune::Applet::appletWindow, fullscreen);
         return 0;
     }

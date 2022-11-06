@@ -12,7 +12,7 @@ function core.Initialize()
     local CmdBar = require "Kitsune.Command.CommandBar"
     local Command = require "Kitsune.Command"
     core.StatusBar = StatusBar()
-    core.DocumentView = DocView()
+    core.DocumentView = DocView(#STARTUP_FILE > 0 and STARTUP_FILE or nil)
     core.CommandBar = CmdBar()
     core.DocumentView.size.w = table.pack(Applet.GetResolution())[1]
     core.DocumentView.size.h = table.pack(Applet.GetResolution())[2]-32
@@ -60,11 +60,7 @@ function core.Run()
                 elseif event[1] == "AppletKeyDown" then
                     Keybind.onKeyPress(event[2])
                 elseif event[1] == "AppletKeyUp" then
-                    if event[2] == "f11" then
-                        Applet.ToggleFullscreen()
-                    else
-                        Keybind.onKeyRelease(event[2])
-                    end
+                    Keybind.onKeyRelease(event[2])
                 end
             else
                 Applet.Sleep(math.max(0, 1 / 60 - (Applet.GetMillis() - frameStart)))

@@ -9,7 +9,7 @@ function DocumentView:new(doc)
         local lineIterator = io.lines(doc)
         local retValue = {lines={},path=doc}
         for i in lineIterator do
-            table.insert(retValue.lines,i)
+            table.insert(retValue.lines,tostring(i:gsub("[\t]","    ")))
         end
         self.document = retValue
     else

@@ -4,6 +4,7 @@ local Keybind = {}
 
 Keybind.Bindings = {
     ["ctrl+shift+p"] = "kitsune_core:open_command_bar",
+    ["f11"] = "kitsune_core:toggle_fullscreen"
 }
 Keybind.ModKeys = {}
 

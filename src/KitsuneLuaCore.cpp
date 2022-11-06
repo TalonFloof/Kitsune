@@ -4,7 +4,7 @@ namespace Kitsune {
     class KitsuneLuaCore {
         public:
             lua_State* curLuaState;
-            KitsuneLuaCore() {
+            KitsuneLuaCore(const char* path) {
                 this->curLuaState = luaL_newstate();
                 luaL_openlibs(this->curLuaState);
                 IncludeLuaAPIs(this->curLuaState);
@@ -20,6 +20,9 @@ namespace Kitsune {
                     lua_pushnumber(this->curLuaState,1.0);
                 #endif
                 lua_setglobal(this->curLuaState, "SCALE");
+                
+                lua_pushstring(this->curLuaState, path);
+                lua_setglobal(this->curLuaState, "STARTUP_FILE");
             }
             void runKitsuneCore() {
                 (void)luaL_dostring(this->curLuaState,

@@ -18,7 +18,7 @@ extern "C" {
 #include <mach-o/dyld.h>
 #endif
 
-int main() {
+int main(int argc, char** argv) {
     #if _WIN32
         int size = GetModuleFileName(NULL, executablePath, 2047);
         executablePath[size] = '\0';
@@ -31,8 +31,11 @@ int main() {
     #else
         strcpy(executablePath, "./Kitsune")
     #endif
-
-    Kitsune::KitsuneLuaCore luaCore;
+    const char* path = "";
+    if(argc >= 2) {
+        path = argv[1];
+    }
+    Kitsune::KitsuneLuaCore luaCore(path);
     Kitsune::Applet::Initialize();
     Kitsune::Applet::Show();
     luaCore.runKitsuneCore();

@@ -25,6 +25,9 @@ namespace Kitsune::Applet {
         SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
         SDL_EnableScreenSaver();
         SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "1");
+        #if SDL_VERSION_ATLEAST(2, 0, 5)
+            SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
+        #endif
         SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
         atexit(SDL_Quit);
         SDL_DisplayMode dm;
