@@ -3,8 +3,8 @@ local Command = require "Kitsune.Command"
 local Keybind = {}
 
 Keybind.Bindings = {
-    ["ctrl+shift+p"] = "kitsune_core:open_command_bar",
-    ["f11"] = "kitsune_core:toggle_fullscreen"
+    ["ctrl+shift+p"] = "core:run_command",
+    ["f11"] = "core:toggle_fullscreen"
 }
 Keybind.ModKeys = {}
 

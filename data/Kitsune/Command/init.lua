@@ -21,8 +21,16 @@ function Command.Execute(name)
     return false
 end
 
+function Command.GetNames()
+    local result = {}
+    for i, _ in pairs(Command.Map) do
+        table.insert(result, i)
+    end
+    return result
+end
+
 function Command.InitializeBuiltins()
-    for _, name in ipairs({"Core"}) do
+    for _, name in ipairs({"Core","File"}) do
         require("Kitsune.Command.Defaults."..name.."Commands")
     end
 end

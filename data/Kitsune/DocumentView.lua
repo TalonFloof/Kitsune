@@ -6,15 +6,19 @@ function DocumentView:new(doc)
     DocumentView.super.new(self)
     self.cursor = "Caret"
     self.caretPos = {x = 1, y = 1}
+    self.document = DocumentView.OpenDoc(doc)
+end
+
+function DocumentView.OpenDoc(doc) 
     if doc ~= nil then
         local lineIterator = io.lines(doc)
         local retValue = {lines={},path=doc}
         for i in lineIterator do
             table.insert(retValue.lines,tostring(i:gsub("[\t]","    ")))
         end
-        self.document = retValue
+        return retValue
     else
-        self.document = nil
+        return nil
     end
 end
 
