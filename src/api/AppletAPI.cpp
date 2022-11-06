@@ -81,7 +81,12 @@ namespace Kitsune::API::Applet {
         lua_pushnumber(L, ((double)SDL_GetTicks64())/1000);
         return 1;
     }
-
+    uint32_t fullscreen = 0;
+    int ToggleFullscreen(lua_State *L) {
+        fullscreen = fullscreen==0?SDL_WINDOW_FULLSCREEN:0;
+        SDL_SetWindowFullscreen(Kitsune::Applet::appletWindow, fullscreen);
+        return 0;
+    }
     int GetResolution(lua_State *L) {
         int w,h;
         SDL_GetWindowSize(Kitsune::Applet::appletWindow, &w, &h);
@@ -131,6 +136,7 @@ namespace Kitsune::API::Applet {
         {"PollEvent", PollEvent},
         {"GetMillis", GetMillis},
         {"GetResolution", GetResolution},
+        {"ToggleFullscreen", ToggleFullscreen},
         {"SetCursor", SetCursor},
         {"Sleep", Sleep},
         {NULL, NULL}

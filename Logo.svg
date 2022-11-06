@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:bx="https://boxy-svg.com">
   <defs>
-    <linearGradient id="color-4-0" gradientUnits="userSpaceOnUse" x1="292.437" y1="37.71" x2="292.437" y2="393.233" xlink:href="#color-4"/>
+    <linearGradient id="color-4-0" gradientUnits="userSpaceOnUse" x1="292.437" y1="37.71" x2="292.437" y2="393.233" gradientTransform="matrix(0.999997, -0.002462, 0.003447, 1.399853, -0.1291, -14.358357)" xlink:href="#color-4"/>
     <linearGradient id="color-4" bx:pinned="true">
       <stop style="stop-color: #fc4a1a;" offset="0"/>
       <stop style="stop-color: #f7b733;" offset="1"/>
     </linearGradient>
-    <linearGradient id="color-4-1" gradientUnits="userSpaceOnUse" x1="350.002" y1="336.789" x2="350.002" y2="522.288" xlink:href="#color-4"/>
+    <linearGradient id="color-4-1" gradientUnits="userSpaceOnUse" x1="292.404" y1="36.544" x2="292.404" y2="222.043" gradientTransform="matrix(0.999973, -0.007364, 0.019819, 2.691252, -0.71635, -59.651811)" xlink:href="#color-4"/>
     <linearGradient gradientUnits="userSpaceOnUse" id="color-0" bx:pinned="true">
       <stop style="stop-color: rgb(69, 69, 69);"/>
     </linearGradient>

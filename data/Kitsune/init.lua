@@ -1,3 +1,5 @@
+local Keybind = require "Kitsune.Command.Keybind"
+
 local core = {}
 
 core.Redraw = true
@@ -7,18 +9,24 @@ core.MousePos = {x=0,y=0}
 function core.Initialize()
     local StatusBar = require "Kitsune.StatusBar"
     local DocView = require "Kitsune.DocumentView"
+    local CmdBar = require "Kitsune.Command.CommandBar"
+    local Command = require "Kitsune.Command"
     core.StatusBar = StatusBar()
     core.DocumentView = DocView()
+    core.CommandBar = CmdBar()
     core.DocumentView.size.w = table.pack(Applet.GetResolution())[1]
     core.DocumentView.size.h = table.pack(Applet.GetResolution())[2]-32
     core.StatusBar.pos.y = table.pack(Applet.GetResolution())[2]-32
     core.StatusBar.size.w = table.pack(Applet.GetResolution())[1]
+    core.CommandBar.size.w = table.pack(Applet.GetResolution())[1]
     if not Renderer.LoadImage("Kitsune:Logo",EXEC_DIR.."/data/Assets/Kitsune.svg") then
         error("Failed to load image Kitsune:Logo!")
     end
     if not Renderer.LoadImage("Kitsune:LogoSymbolic",EXEC_DIR.."/data/Assets/KitsuneSymbolic.svg") then
         error("Failed to load image Kitsune:LogoSymbolic!")
     end
+
+    Command.InitializeBuiltins()
 end
 
 function core.Run()
@@ -49,6 +57,14 @@ function core.Run()
                 elseif event[1] == "AppletMouseScroll" then
                     core.DocumentView:onMouseScroll(core.MousePos.x,core.MousePos.y,event[2])
                     core.StatusBar:onMouseScroll(core.MousePos.x,core.MousePos.y,event[2])
+                elseif event[1] == "AppletKeyDown" then
+                    Keybind.onKeyPress(event[2])
+                elseif event[1] == "AppletKeyUp" then
+                    if event[2] == "f11" then
+                        Applet.ToggleFullscreen()
+                    else
+                        Keybind.onKeyRelease(event[2])
+                    end
                 end
             else
                 Applet.Sleep(math.max(0, 1 / 60 - (Applet.GetMillis() - frameStart)))

@@ -17,8 +17,7 @@ namespace Kitsune::Applet {
         return path;
     }
     void SetWindowIcon() {
-        #include "KitsuneWindowIcon.cpp"
-        SDL_Surface *surf = SDL_CreateRGBSurfaceFrom(windowIcon,64,64,32,64*4,0x000000ff,0x0000ff00,0x00ff0000,0xff000000);
+        SDL_Surface *surf = IMG_Load((GetExecutableParentDirectory()+"/data/Assets/Kitsune.svg").c_str());
         SDL_SetWindowIcon(appletWindow, surf);
         SDL_FreeSurface(surf);
     }
