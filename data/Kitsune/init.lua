@@ -19,6 +19,8 @@ function core.Initialize()
     core.StatusBar.pos.y = table.pack(Applet.GetResolution())[2]-32
     core.StatusBar.size.w = table.pack(Applet.GetResolution())[1]
     core.CommandBar.size.w = table.pack(Applet.GetResolution())[1]
+    core.CommandBar.pos.y = table.pack(Applet.GetResolution())[2]-32
+    core.CommandBar.sourceY = table.pack(Applet.GetResolution())[2]-32
     if not Renderer.LoadImage("Kitsune:Logo",EXEC_DIR.."/data/Assets/Kitsune.svg") then
         error("Failed to load image Kitsune:Logo!")
     end
@@ -35,6 +37,7 @@ function core.Run()
         if core.Redraw then
             core.DocumentView:draw()
             core.StatusBar:draw()
+            core.CommandBar:draw()
             Renderer.ClearClipStack() -- Just in case...
             Renderer.Invalidate()
             core.Redraw = false
@@ -48,6 +51,9 @@ function core.Run()
                     core.DocumentView.size.h = event[3]-32
                     core.StatusBar.pos.y = event[3]-32
                     core.StatusBar.size.w = event[2]
+                    core.CommandBar.pos.y = event[3]-32
+                    core.CommandBar.sourceY = event[3]-32
+                    core.CommandBar.size.w = event[2]
                     core.Redraw = true
                 elseif event[1] == "AppletMouseMoved" then
                     core.DocumentView:onMouseMove(event[2],event[3])
@@ -59,8 +65,13 @@ function core.Run()
                     core.StatusBar:onMouseScroll(core.MousePos.x,core.MousePos.y,event[2])
                 elseif event[1] == "AppletKeyDown" then
                     Keybind.onKeyPress(event[2])
+                    core.CommandBar:onKeyPress(event[2])
                 elseif event[1] == "AppletKeyUp" then
                     Keybind.onKeyRelease(event[2])
+                elseif event[1] == "AppletText" then
+                    core.CommandBar:onTextType(event[2])
+                elseif event[1] == "AppletMouseDown" then
+                    core.CommandBar:onMouseDown(event[2],event[3],event[4],event[5])
                 end
             else
                 Applet.Sleep(math.max(0, 1 / 60 - (Applet.GetMillis() - frameStart)))
@@ -71,6 +82,7 @@ function core.Run()
             frameStart = Applet.GetMillis()
             core.DocumentView:tick()
             core.StatusBar:tick()
+            core.CommandBar:tick()
         end
     end
 end

@@ -5,6 +5,7 @@ local DocumentView = Element:extend()
 function DocumentView:new(doc)
     DocumentView.super.new(self)
     self.cursor = "Caret"
+    self.caretPos = {x = 1, y = 1}
     if doc ~= nil then
         local lineIterator = io.lines(doc)
         local retValue = {lines={},path=doc}
@@ -30,8 +31,10 @@ function DocumentView:draw()
     if self.document ~= nil then
         self.cursor = "Caret"
         local min, max = self:getLineRange()
+        local padding = (#tostring(#self.document.lines)*8)+8
         for i=min,max do
-            Renderer.Text(0,((i-1)*16)-self.scrollPos.y,1,self.document.lines[i],255,255,255)
+            Renderer.Text(padding,((i-1)*16)-self.scrollPos.y,1,self.document.lines[i],255,255,255)
+            Renderer.Text(padding/2-(#tostring(i)*4),((i-1)*16)-self.scrollPos.y+1,1,i,0x45,0x42,0x44)
         end
     else
         self.cursor = "Default"

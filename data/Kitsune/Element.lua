@@ -34,7 +34,7 @@ function Element:drawBackground(r,g,b,a)
     Renderer.Rect(x, y, w + x % 1, h + y % 1, r, g, b, a)
 end
 
-function Element:isWithinBounds(x,y) return x >= self.pos.x and x <= self.pos.x+self.size.w and y >= self.pos.y and y <= self.pos.y+self.size.h end
+function Element:isWithinBounds(x,y) return x > self.pos.x and x < self.pos.x+self.size.w and y >=self.pos.y and y < self.pos.y+self.size.h end
 
 function Element:onMouseMove(x,y)
     if self:isWithinBounds(x,y) and Core.Cursor ~= self.cursor then
