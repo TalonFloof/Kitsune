@@ -98,6 +98,7 @@ end
 local function ensureVisibility(docView)
     local padding = (#tostring(#docView.document.lines)*8)+8
     docView.scrollPos.dest.x = ((docView.caretPos.x-1) // ((docView.size.w-padding)//8)) * (docView.size.w-padding)
+    
 end
 
 function DocumentView:onKeyPress(k)

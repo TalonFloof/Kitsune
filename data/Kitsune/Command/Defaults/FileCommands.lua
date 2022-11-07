@@ -35,5 +35,30 @@ Commands.Add {
             end
             return res
         end)
+    end,
+    ["file:save"] = function()
+        if Core.DocumentView.document == nil then
+            Core.StatusBar:displayAlert("No buffers can be saved")
+        else
+            if Core.DocumentView.document.path ~= nil then
+                xpcall(function()
+                    local file = io.open(Core.DocumentView.document.path,"w")
+                    file:write(table.concat(Core.DocumentView.document.lines,"\n"))
+                    file:close()
+                    Core.StatusBar:displayAlert("Successfully saved file")
+                end,function(e)
+                    Core.StatusBar:displayAlert(e)
+                end)
+            else
+                Core.StatusBar:displayAlert("To be implemented...")
+            end
+        end
+    end,
+    ["file:close"] = function()
+        if Core.DocumentView.document == nil then
+            Core.StatusBar:displayAlert("No buffers can be closed")
+        else
+            Core.DocumentView.document = nil
+        end
     end
 }

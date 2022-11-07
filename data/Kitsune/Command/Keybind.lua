@@ -4,7 +4,8 @@ local Keybind = {}
 
 Keybind.Bindings = {
     ["ctrl+shift+p"] = "core:run_command",
-    ["f11"] = "core:toggle_fullscreen"
+    ["f11"] = "core:toggle_fullscreen",
+    ["ctrl+s"] = "file:save"
 }
 Keybind.ModKeys = {}
 
