@@ -101,7 +101,7 @@ local function ensureVisibility(docView)
 end
 
 function DocumentView:onKeyPress(k)
-    if self.document ~= nil and Core.CommandBar.destHeight < 32 then
+    if self.document ~= nil and Core.CommandBar.size.h <= 0 then
         if k == "down" then
             self.caretPos.y = math.min(#self.document.lines,self.caretPos.y+1)
             self.caretPos.x = math.min(#self.document.lines[self.caretPos.y]+1,self.caretPos.x)
@@ -154,7 +154,46 @@ function DocumentView:onKeyPress(k)
             self.ticks = 0
             ensureVisibility(self)
             Core.Redraw = true
+        elseif k == "backspace" and self.caretPos.x > 1 then
+            local text = self.document.lines[self.caretPos.y]
+            text = text:sub(1,self.caretPos.x-2)..text:sub(self.caretPos.x)
+            self.document.lines[self.caretPos.y] = text
+            self.caretPos.x = math.max(1,self.caretPos.x - 1)
+            ensureVisibility(self)
+            self.ticks = 0
+            Core.Redraw = true
+        elseif k == "backspace" and self.caretPos.x <= 1 and self.caretPos.y > 1 then
+            local text = self.document.lines[self.caretPos.y]
+            if self.caretPos.y-1 >= 1 then
+                self.document.lines[self.caretPos.y-1] = self.document.lines[self.caretPos.y-1] .. text
+            end
+            self.caretPos.y = self.caretPos.y - 1
+            self.caretPos.x = #self.document.lines[self.caretPos.y]-#text+1
+            table.remove(self.document.lines,self.caretPos.y+1)
+            ensureVisibility(self)
+            self.ticks = 0
+            Core.Redraw = true
+        elseif k == "return" then
+            local movingOverText = self.document.lines[self.caretPos.y]:sub(self.caretPos.x)
+            self.document.lines[self.caretPos.y] = self.document.lines[self.caretPos.y]:sub(1,self.caretPos.x-1)
+            table.insert(self.document.lines,self.caretPos.y+1,movingOverText)
+            self.caretPos.y = self.caretPos.y + 1
+            self.caretPos.x = 1
+            self.ticks = 0
+            Core.Redraw = true
         end
+    end
+end
+
+function DocumentView:onTextType(k)
+    if self.document ~= nil and Core.CommandBar.destHeight < 32 then
+        local text = self.document.lines[self.caretPos.y]
+        text = text:sub(1,self.caretPos.x-1)..k..text:sub(self.caretPos.x)
+        self.document.lines[self.caretPos.y] = text
+        self.caretPos.x = self.caretPos.x + 1
+        self.ticks = 0
+        ensureVisibility(self)
+        Core.Redraw = true
     end
 end
 

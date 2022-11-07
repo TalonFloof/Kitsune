@@ -71,6 +71,7 @@ function core.Run()
                     Keybind.onKeyRelease(event[2])
                 elseif event[1] == "AppletText" then
                     core.CommandBar:onTextType(event[2])
+                    core.DocumentView:onTextType(event[2])
                 elseif event[1] == "AppletMouseDown" then
                     core.CommandBar:onMouseDown(event[2],event[3],event[4],event[5])
                 end

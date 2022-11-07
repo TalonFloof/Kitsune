@@ -63,7 +63,7 @@ function CommandBar:draw()
         else
             Renderer.Text(0,self.pos.y+((i-1)*16),1,j.text,0xc4,0xb3,0x98)
         end
-        local str = "Score: "..tostring(j.score)
+        local str = j.keybind or ""
         Renderer.Text(self.size.w-(#str*8),self.pos.y+((i-1)*16),1,str,0x61,0x5d,0x5f)
     end
     Renderer.PopClipArea()
