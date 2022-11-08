@@ -43,11 +43,15 @@ function StatusBar:tick()
     if self.alertTimer > 0 then
         self.alertTimer = self.alertTimer - 1
         if self.alertTimer == 0 then
-            if self:isWithinBounds(Core.MousePos.x,Core.MousePos.y) then
+            if self:isWithinBounds(Core.MousePos.x,Core.MousePos.y) and Applet.IsFocused() then
                 self.scrollPos.dest.y = 32
             else
                 self.scrollPos.dest.y = 0
             end
+        end
+    elseif self.scrollPos.dest.y == 32 and not Applet.IsFocused() then
+        if self.alertTimer <= 0 then
+            self.scrollPos.dest.y = 0
         end
     end
 end
@@ -60,7 +64,7 @@ end
 
 function StatusBar:onMouseMove(x,y)
     StatusBar.super.onMouseMove(self,x,y)
-    if self:isWithinBounds(x,y) and self.alertTimer <= 0 then
+    if self:isWithinBounds(x,y) and self.alertTimer <= 0 and Applet.IsFocused() then
         self.scrollPos.dest.y = 32
     elseif self.alertTimer <= 0 then
         self.scrollPos.dest.y = 0

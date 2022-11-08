@@ -48,18 +48,18 @@ function DocumentView:draw()
         local min, max = self:getLineRange()
         local padding = (#tostring(#self.document.lines)*8)+8
         for i=min,max do
-            if self.caretPos.y == i and Core.CommandBar.destHeight < 32 then
+            if self.caretPos.y == i and Core.CommandBar.destHeight < 32 and Applet.IsFocused() then
                 Renderer.Rect(self.pos.x+padding,((i-1)*16)-self.scrollPos.y,self.size.w-padding,16,0x52,0x4F,0x50,255)
             end
             Renderer.PushClipArea(self.pos.x+padding,self.pos.y,self.size.w-padding,self.size.h)
             Renderer.Text(self.pos.x+padding-self.scrollPos.x,((i-1)*16)-self.scrollPos.y,1,self.document.lines[i],255,255,255)
             Renderer.PopClipArea()
-            if self.caretPos.y == i and Core.CommandBar.destHeight < 32 then
+            if self.caretPos.y == i and Core.CommandBar.destHeight < 32 and Applet.IsFocused() then
                 Renderer.Text(self.pos.x+padding/2-(#tostring(i)*4),((i-1)*16)-self.scrollPos.y+1,1,i,0x61,0x5d,0x5f)
             else
                 Renderer.Text(self.pos.x+padding/2-(#tostring(i)*4),((i-1)*16)-self.scrollPos.y+1,1,i,0x45,0x42,0x44)
             end
-            if self.caretPos.y == i and self.ticks % 48 < 24 and Core.CommandBar.destHeight < 32 then
+            if self.caretPos.y == i and self.ticks % 48 < 24 and Core.CommandBar.destHeight < 32 and Applet.IsFocused() then
                 Renderer.Rect(self.pos.x+padding+((self.caretPos.x-1)*8)-self.scrollPos.x,((i-1)*16)-self.scrollPos.y,2,16,0x61,0xef,0xce,255)
             end
         end

@@ -91,6 +91,11 @@ namespace Kitsune::API::Applet {
         SDL_SetWindowFullscreen(Kitsune::Applet::appletWindow, fullscreen);
         return 0;
     }
+    int IsFocused(lua_State* L) {
+        unsigned flags = SDL_GetWindowFlags(Kitsune::Applet::appletWindow);
+        lua_pushboolean(L, flags & SDL_WINDOW_INPUT_FOCUS);
+        return 1;
+    }
     int GetResolution(lua_State *L) {
         int w,h;
         SDL_GetWindowSize(Kitsune::Applet::appletWindow, &w, &h);
@@ -141,6 +146,7 @@ namespace Kitsune::API::Applet {
         {"GetMillis", GetMillis},
         {"GetResolution", GetResolution},
         {"ToggleFullscreen", ToggleFullscreen},
+        {"IsFocused", IsFocused},
         {"SetCursor", SetCursor},
         {"Sleep", Sleep},
         {NULL, NULL}
