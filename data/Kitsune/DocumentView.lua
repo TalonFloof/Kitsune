@@ -181,6 +181,7 @@ function DocumentView:onKeyPress(k)
             self.caretPos.y = self.caretPos.y + 1
             self.caretPos.x = 1
             self.ticks = 0
+            ensureVisibility(self)
             Core.Redraw = true
         end
     end
