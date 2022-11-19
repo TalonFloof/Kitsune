@@ -1,4 +1,4 @@
-local Keybind = require "Kitsune.Command.Keybind"
+local Keybind = nil
 
 local core = {}
 
@@ -17,9 +17,12 @@ function core.Initialize()
     local DocView = require "Kitsune.DocumentView"
     local CmdBar = require "Kitsune.Command.CommandBar"
     local Command = require "Kitsune.Command"
+    local DebugCon = require "Kitsune.DebugConsole"
+    Keybind = require "Kitsune.Command.Keybind"
     core.StatusBar = StatusBar()
     core.DocumentView = DocView(#STARTUP_FILE > 0 and STARTUP_FILE or nil)
     core.CommandBar = CmdBar()
+    core.DebugConsole = DebugCon()
     core.DocumentView.size.w = table.pack(Applet.GetResolution())[1]
     core.DocumentView.size.h = table.pack(Applet.GetResolution())[2]-32
     core.StatusBar.pos.y = table.pack(Applet.GetResolution())[2]-32
@@ -27,6 +30,8 @@ function core.Initialize()
     core.CommandBar.size.w = table.pack(Applet.GetResolution())[1]
     core.CommandBar.pos.y = table.pack(Applet.GetResolution())[2]-32
     core.CommandBar.sourceY = table.pack(Applet.GetResolution())[2]-32
+    core.DebugConsole.size.w = table.pack(Applet.GetResolution())[1]
+    core.DebugConsole.maxHeight = table.pack(Applet.GetResolution())[2]//3
     if not Renderer.LoadImage("Kitsune:Logo",EXEC_DIR.."/data/Assets/Kitsune.svg") then
         error("Failed to load image Kitsune:Logo!")
     end
@@ -44,6 +49,7 @@ function core.Run()
             core.DocumentView:draw()
             core.StatusBar:draw()
             core.CommandBar:draw()
+            core.DebugConsole:draw()
             Renderer.ClearClipStack() -- Just in case...
             Renderer.Invalidate()
             core.Redraw = false
@@ -60,6 +66,8 @@ function core.Run()
                     core.CommandBar.pos.y = event[3]-32
                     core.CommandBar.sourceY = event[3]-32
                     core.CommandBar.size.w = event[2]
+                    core.DebugConsole.size.w = event[2]
+                    core.DebugConsole.maxHeight = event[3]//3
                     core.Redraw = true
                 elseif event[1] == "AppletMouseMoved" then
                     core.DocumentView:onMouseMove(event[2],event[3])
@@ -100,6 +108,7 @@ function core.Run()
             core.DocumentView:tick()
             core.StatusBar:tick()
             core.CommandBar:tick()
+            core.DebugConsole:tick()
         end
     end
 end

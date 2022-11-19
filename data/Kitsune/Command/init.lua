@@ -30,7 +30,7 @@ function Command.GetNames()
 end
 
 function Command.InitializeBuiltins()
-    for _, name in ipairs({"Core","File"}) do
+    for _, name in ipairs({"Core","File","Edit"}) do
         require("Kitsune.Command.Defaults."..name.."Commands")
     end
 end

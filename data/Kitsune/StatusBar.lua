@@ -23,7 +23,7 @@ function StatusBar:draw()
         else
             Renderer.Text(40,self.pos.y-self.scrollPos.y,1,name,Theme.text)
         end
-        Renderer.Text(40,self.pos.y-self.scrollPos.y+16,1,"line: "..tostring(Core.DocumentView.caretPos.y).." col: "..tostring(Core.DocumentView.caretPos.x).." "..string.format("%d%%", math.floor(Core.DocumentView.caretPos.y / #Core.DocumentView.document.lines * 100)),Theme.text)
+        Renderer.Text(40,self.pos.y-self.scrollPos.y+16,1,"line: "..tostring(Core.DocumentView.selection.to.y).." col: "..tostring(Core.DocumentView.selection.to.x).." "..string.format("%d%%", math.floor(Core.DocumentView.selection.to.y / #Core.DocumentView.document.lines * 100)),Theme.text)
     else
         Renderer.Text(40,self.pos.y-self.scrollPos.y,1,"No buffer",Theme.text)
     end

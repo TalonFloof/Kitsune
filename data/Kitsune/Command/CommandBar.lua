@@ -50,9 +50,10 @@ function CommandBar:draw()
     Renderer.PushClipArea(self.pos.x,self.pos.y,self.size.w,self.size.h)
     self:drawBackground(Theme.commandBackground)
     Renderer.Rect(self.pos.x,self.pos.y+self.size.h-31,self.size.w,31,Theme.docBackground)
-    Renderer.Text(8,self.pos.y+self.size.h-(math.min(32,self.size.h)/2+8),1,self.promptMsg..self.prompt,Theme.docText)
+    local promptTextSize = ((self.size.w-24)//8)-#self.promptMsg
+    Renderer.Text(8,self.pos.y+self.size.h-(math.min(32,self.size.h)/2+8),1,self.promptMsg..self.prompt:sub(math.max(1,#self.prompt-promptTextSize),#self.prompt),Theme.docText)
     if self.ticks % 48 < 24 then
-        Renderer.Rect(8+(#(self.promptMsg..self.prompt)*8),self.pos.y+self.size.h-(math.min(32,self.size.h)/2+8),2,16,Theme.caret)
+        Renderer.Rect(8+(#(self.promptMsg..self.prompt:sub(math.max(1,#self.prompt-promptTextSize),#self.prompt))*8),self.pos.y+self.size.h-(math.min(32,self.size.h)/2+8),2,16,Theme.caret)
     end
     local maxLength = math.floor(self.size.w*.75)//8
     for i,j in ipairs(self.suggestions) do
@@ -99,6 +100,7 @@ function CommandBar:onKeyPress(k)
             self.currentChange = self.currentChange + 1
             self.suggestionIndex = 1
             Core.Redraw = true
+            self.ticks = 0
         elseif k == "return" then
             self.destHeight = 0
             self.suggestMethod = nil
@@ -136,6 +138,7 @@ function CommandBar:onTextType(text)
         self.currentChange = self.currentChange + 1
         self.suggestionIndex = 1
         Core.Redraw = true
+        self.ticks = 0
     end
 end
 

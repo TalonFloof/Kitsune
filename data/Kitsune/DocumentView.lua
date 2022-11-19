@@ -7,8 +7,8 @@ local DocumentView = Element:extend()
 function DocumentView:new(doc)
     DocumentView.super.new(self)
     self.cursor = "Caret"
-    self.caretPos = {x = 1, y = 1}
     self.selection = {from = {x = 1, y = 1}, to = {x = 1, y = 1}}
+    self.prevPos = {x=-1,y=-1}
     self.mouseDown = false
     local result, val = DocumentView.OpenDoc(doc)
     if result then
@@ -57,6 +57,12 @@ function DocumentView:getSelectionRange()
     end
 end
 
+function DocumentView:clampPosition(col, line)
+    line = math.max(1,math.min(#self.document.lines,line))
+    col = math.max(1,math.min(#self.document.lines[line]+1,col))
+    return col, line
+end
+
 function DocumentView:draw()
     Renderer.PushClipArea(self.pos.x,self.pos.y,self.size.w,self.size.h)
     self:drawBackground(Theme.docBackground)
@@ -65,7 +71,7 @@ function DocumentView:draw()
         local min, max = self:getLineRange()
         local padding = (#tostring(#self.document.lines)*8)+8
         for i=min,max do
-            if self.caretPos.y == i and Core.CommandBar.destHeight < 32 and Applet.IsFocused() and self.selection.to.x == self.selection.from.x and self.selection.to.y == self.selection.from.y then
+            if self.selection.to.y == i and Core.CommandBar.destHeight < 32 and Applet.IsFocused() and self.selection.to.x == self.selection.from.x and self.selection.to.y == self.selection.from.y then
                 Renderer.Rect(self.pos.x+padding,((i-1)*16)-self.scrollPos.y,self.size.w-padding,16,Theme.lineHighlight)
             end
             local x1, y1, x2, y2 = self:getSelectionRange()
@@ -81,14 +87,14 @@ function DocumentView:draw()
             Renderer.PushClipArea(self.pos.x+padding,self.pos.y,self.size.w-padding,self.size.h)
             Renderer.Text(self.pos.x+padding-self.scrollPos.x,((i-1)*16)-self.scrollPos.y,1,self.document.lines[i],Theme.docText)
             Renderer.PopClipArea()
-            if self.caretPos.y == i and Core.CommandBar.destHeight < 32 and Applet.IsFocused() then
+            if self.selection.to.y == i and Core.CommandBar.destHeight < 32 and Applet.IsFocused() then
                 Renderer.Text(self.pos.x+padding/2-(#tostring(i)*4),((i-1)*16)-self.scrollPos.y+1,1,i,Theme.lineNumber2)
             else
                 Renderer.Text(self.pos.x+padding/2-(#tostring(i)*4),((i-1)*16)-self.scrollPos.y+1,1,i,Theme.lineNumber1)
             end
-            if self.caretPos.y == i and self.ticks % 48 < 24 and Core.CommandBar.destHeight < 32 and Applet.IsFocused() then
+            if self.selection.to.y == i and self.ticks % 48 < 24 and Core.CommandBar.destHeight < 32 and Applet.IsFocused() then
                 Renderer.PushClipArea(self.pos.x+padding,self.pos.y,self.size.w-padding,self.size.h)
-                Renderer.Rect(self.pos.x+padding+((self.caretPos.x-1)*8)-self.scrollPos.x,((i-1)*16)-self.scrollPos.y,2,16,Theme.caret)
+                Renderer.Rect(self.pos.x+padding+((self.selection.to.x-1)*8)-self.scrollPos.x,((i-1)*16)-self.scrollPos.y,2,16,Theme.caret)
                 Renderer.PopClipArea()
             end
         end
@@ -106,12 +112,27 @@ function DocumentView:draw()
     Renderer.PopClipArea()
 end
 
+local function ensureVisibility(docView)
+    local min = 16 * (docView.selection.to.y - 1)
+    local max = 16 * (docView.selection.to.y + 2) - docView.size.h
+    docView.scrollPos.dest.y = math.min(docView.scrollPos.dest.y, min)
+    docView.scrollPos.dest.y = math.max(docView.scrollPos.dest.y, max)
+    local gw = (#tostring(#docView.document.lines)*8)+8
+    local xoffset = (docView.selection.to.x-1)*8
+    local max = xoffset - docView.size.w + gw + docView.size.w / 5
+    docView.scrollPos.dest.x = math.max(0, max)
+end
+
 function DocumentView:tick()
     DocumentView.super.tick(self)
     if self.document ~= nil and Core.CommandBar.destHeight < 32 then
         self.ticks = (self.ticks + 1) % (48*2)
         if self.ticks % 24 == 0 then
             Core.Redraw = true
+        end
+        if self.prevPos.x ~= self.selection.to.x or self.prevPos.y ~= self.selection.to.y and self.size.w > 0 then
+            ensureVisibility(self)
+            self.prevPos.x, self.prevPos.y = self.selection.to.x, self.selection.to.y
         end
     else
         self.ticks = 0
@@ -124,136 +145,133 @@ function DocumentView:onMouseScroll(x,y,direction)
     end
 end
 
-local function ensureVisibility(docView)
-    local min = 16 * (docView.caretPos.y - 1)
-    local max = 16 * (docView.caretPos.y + 2) - docView.size.h
-    docView.scrollPos.dest.y = math.min(docView.scrollPos.dest.y, min)
-    docView.scrollPos.dest.y = math.max(docView.scrollPos.dest.y, max)
-    local gw = (#tostring(#docView.document.lines)*8)+8
-    local xoffset = (docView.caretPos.x-1)*8
-    local max = xoffset - docView.size.w + gw + docView.size.w / 5
-    docView.scrollPos.dest.x = math.max(0, max)
-end
-
 function DocumentView:onKeyPress(k)
     if self.document ~= nil and Core.CommandBar.size.h <= 0 then
-        if k == "down" then
-            self.caretPos.y = math.min(#self.document.lines,self.caretPos.y+1)
-            self.caretPos.x = math.min(#self.document.lines[self.caretPos.y]+1,self.caretPos.x)
+        --[[if k == "down" then
+            self.selection.to.y = math.min(#self.document.lines,self.selection.to.y+1)
+            self.selection.to.x = math.min(#self.document.lines[self.selection.to.y]+1,self.selection.to.x)
+            self.selection.from.x = self.selection.to.x
+            self.selection.from.y = self.selection.to.y
+            self.selection.to.x = self.selection.to.x
+            self.selection.to.y = self.selection.to.y
             self.ticks = 0
             ensureVisibility(self)
             Core.Redraw = true
-            self.selection.from.x = -1
-            self.selection.from.y = -1
-            self.selection.to.x = -1
-            self.selection.to.y = -1
         elseif k == "up" then
-            self.caretPos.y = math.max(1,self.caretPos.y-1)
-            self.caretPos.x = math.min(#self.document.lines[self.caretPos.y]+1,self.caretPos.x)
+            self.selection.to.y = math.max(1,self.selection.to.y-1)
+            self.selection.to.x = math.min(#self.document.lines[self.selection.to.y]+1,self.selection.to.x)
+            self.selection.from.x = self.selection.to.x
+            self.selection.from.y = self.selection.to.y
+            self.selection.to.x = self.selection.to.x
+            self.selection.to.y = self.selection.to.y
             self.ticks = 0
             ensureVisibility(self)
             Core.Redraw = true
-            self.selection.from.x = -1
-            self.selection.from.y = -1
-            self.selection.to.x = -1
-            self.selection.to.y = -1
         elseif k == "right" then
-            if self.caretPos.x+1 > #self.document.lines[self.caretPos.y]+1 then
-                if math.min(#self.document.lines,self.caretPos.y+1) ~= self.caretPos.y then
-                    self.caretPos.y = self.caretPos.y+1
-                    self.caretPos.x = 1
+            if self.selection.to.x+1 > #self.document.lines[self.selection.to.y]+1 then
+                if math.min(#self.document.lines,self.selection.to.y+1) ~= self.selection.to.y then
+                    self.selection.to.y = self.selection.to.y+1
+                    self.selection.to.x = 1
+                    self.selection.from.x = 1
+                    self.selection.from.y = self.selection.to.y
+                    self.selection.to.x = 1
+                    self.selection.to.y = self.selection.to.y
                     self.ticks = 0
                     ensureVisibility(self)
                     Core.Redraw = true
                 end
             else
-                self.caretPos.x = self.caretPos.x+1
+                self.selection.to.x = self.selection.to.x+1
+                self.selection.from.x = self.selection.to.x
+                self.selection.to.x = self.selection.to.x
                 self.ticks = 0
                 ensureVisibility(self)
                 Core.Redraw = true
             end
-            self.selection.from.x = -1
-            self.selection.from.y = -1
-            self.selection.to.x = -1
-            self.selection.to.y = -1
         elseif k == "left" then
-            if self.caretPos.x-1 < 1 then
-                if math.max(1,self.caretPos.y-1) ~= self.caretPos.y then
-                    self.caretPos.y = self.caretPos.y-1
-                    self.caretPos.x = #self.document.lines[self.caretPos.y]+1
+            if self.selection.to.x-1 < 1 then
+                if math.max(1,self.selection.to.y-1) ~= self.selection.to.y then
+                    self.selection.to.y = self.selection.to.y-1
+                    self.selection.to.x = #self.document.lines[self.selection.to.y]+1
+                    self.selection.from.x = self.selection.to.x
+                    self.selection.from.y = self.selection.to.y
+                    self.selection.to.x = self.selection.to.x
+                    self.selection.to.y = self.selection.to.y
                     self.ticks = 0
                     ensureVisibility(self)
                     Core.Redraw = true
                 end
             else
-                self.caretPos.x = self.caretPos.x-1
+                self.selection.to.x = self.selection.to.x-1
+                self.selection.from.x = self.selection.to.x
+                self.selection.to.x = self.selection.to.x
                 self.ticks = 0
                 ensureVisibility(self)
                 Core.Redraw = true
             end
         elseif k == "home" then
-            self.caretPos.x = 1
+            self.selection.to.x = 1
             self.selection.from.x = 1
             self.selection.to.x = 1
             self.ticks = 0
             ensureVisibility(self)
             Core.Redraw = true
         elseif k == "end" then
-            self.caretPos.x = #self.document.lines[self.caretPos.y]+1
-            self.selection.from.x = self.caretPos.x
-            self.selection.to.x = self.caretPos.x
+            self.selection.to.x = #self.document.lines[self.selection.to.y]+1
+            self.selection.from.x = self.selection.to.x
+            self.selection.to.x = self.selection.to.x
             self.ticks = 0
             ensureVisibility(self)
             Core.Redraw = true
-        elseif k == "backspace" and self.caretPos.x > 1 then
-            local text = self.document.lines[self.caretPos.y]
-            text = text:sub(1,self.caretPos.x-2)..text:sub(self.caretPos.x)
-            self.document.lines[self.caretPos.y] = text
-            self.caretPos.x = math.max(1,self.caretPos.x - 1)
-            self.selection.from.x = self.caretPos.x
-            self.selection.to.x = self.caretPos.x
+        elseif k == "backspace" and self.selection.to.x > 1 then
+            local text = self.document.lines[self.selection.to.y]
+            text = text:sub(1,self.selection.to.x-2)..text:sub(self.selection.to.x)
+            self.document.lines[self.selection.to.y] = text
+            self.selection.to.x = math.max(1,self.selection.to.x - 1)
+            self.selection.from.x = self.selection.to.x
+            self.selection.to.x = self.selection.to.x
             ensureVisibility(self)
             self.ticks = 0
             Core.Redraw = true
-        elseif k == "backspace" and self.caretPos.x <= 1 and self.caretPos.y > 1 then
-            local text = self.document.lines[self.caretPos.y]
-            if self.caretPos.y-1 >= 1 then
-                self.document.lines[self.caretPos.y-1] = self.document.lines[self.caretPos.y-1] .. text
+        elseif k == "backspace" and self.selection.to.x <= 1 and self.selection.to.y > 1 then
+            local text = self.document.lines[self.selection.to.y]
+            if self.selection.to.y-1 >= 1 then
+                self.document.lines[self.selection.to.y-1] = self.document.lines[self.selection.to.y-1] .. text
             end
-            self.caretPos.y = self.caretPos.y - 1
-            self.caretPos.x = #self.document.lines[self.caretPos.y]-#text+1
-            self.selection.from.x = self.caretPos.x
-            self.selection.from.y = self.caretPos.y
-            self.selection.to.x = self.caretPos.x
-            self.selection.to.y = self.caretPos.y
-            table.remove(self.document.lines,self.caretPos.y+1)
+            self.selection.to.y = self.selection.to.y - 1
+            self.selection.to.x = #self.document.lines[self.selection.to.y]-#text+1
+            self.selection.from.x = self.selection.to.x
+            self.selection.from.y = self.selection.to.y
+            self.selection.to.x = self.selection.to.x
+            self.selection.to.y = self.selection.to.y
+            table.remove(self.document.lines,self.selection.to.y+1)
             ensureVisibility(self)
             self.ticks = 0
             Core.Redraw = true
         elseif k == "return" then
-            local movingOverText = self.document.lines[self.caretPos.y]:sub(self.caretPos.x)
-            self.document.lines[self.caretPos.y] = self.document.lines[self.caretPos.y]:sub(1,self.caretPos.x-1)
-            table.insert(self.document.lines,self.caretPos.y+1,movingOverText)
-            self.caretPos.y = self.caretPos.y + 1
-            self.caretPos.x = 1
-            self.selection.from.x = self.caretPos.x
-            self.selection.from.y = self.caretPos.y
-            self.selection.to.x = self.caretPos.x
-            self.selection.to.y = self.caretPos.y
+            local movingOverText = self.document.lines[self.selection.to.y]:sub(self.selection.to.x)
+            self.document.lines[self.selection.to.y] = self.document.lines[self.selection.to.y]:sub(1,self.selection.to.x-1)
+            table.insert(self.document.lines,self.selection.to.y+1,movingOverText)
+            self.selection.to.y = self.selection.to.y + 1
+            self.selection.to.x = 1
+            self.selection.from.x = self.selection.to.x
+            self.selection.from.y = self.selection.to.y
+            self.selection.to.x = self.selection.to.x
+            self.selection.to.y = self.selection.to.y
             self.ticks = 0
             ensureVisibility(self)
             Core.Redraw = true
         elseif k == "tab" then
-            local text = self.document.lines[self.caretPos.y]
-            text = text:sub(1,self.caretPos.x-1).."    "..text:sub(self.caretPos.x)
-            self.document.lines[self.caretPos.y] = text
-            self.caretPos.x = self.caretPos.x + 4
-            self.selection.from.x = self.caretPos.x
-            self.selection.to.x = self.caretPos.x
+            local text = self.document.lines[self.selection.to.y]
+            text = text:sub(1,self.selection.to.x-1).."    "..text:sub(self.selection.to.x)
+            self.document.lines[self.selection.to.y] = text
+            self.selection.to.x = self.selection.to.x + 4
+            self.selection.from.x = self.selection.to.x
+            self.selection.to.x = self.selection.to.x
             self.ticks = 0
             ensureVisibility(self)
             Core.Redraw = true
-        end
+        end]]
     end
 end
 
@@ -261,14 +279,12 @@ function DocumentView:onMouseDown(button,x,y,clicks)
     if self:isWithinBounds(x,y) and self.document ~= nil then
         self.mouseDown = true
         local padding = (#tostring(#self.document.lines)*8)+8
-        self.caretPos.x = (self.scrollPos.dest.x+(x-padding)+8)//8
-        self.caretPos.y = (self.scrollPos.dest.y+y+16)//16
-        self.caretPos.y = math.floor(math.min(#self.document.lines,self.caretPos.y))
-        self.caretPos.x = math.floor(math.max(1,math.min(#self.document.lines[self.caretPos.y]+1,self.caretPos.x)))
-        self.selection.from.x = self.caretPos.x
-        self.selection.from.y = self.caretPos.y
-        self.selection.to.x = self.caretPos.x
-        self.selection.to.y = self.caretPos.y
+        self.selection.to.x = (self.scrollPos.dest.x+(x-padding)+8)//8
+        self.selection.to.y = (self.scrollPos.dest.y+y+16)//16
+        self.selection.to.y = math.floor(math.min(#self.document.lines,self.selection.to.y))
+        self.selection.to.x = math.floor(math.max(1,math.min(#self.document.lines[self.selection.to.y]+1,self.selection.to.x)))
+        self.selection.from.x = self.selection.to.x
+        self.selection.from.y = self.selection.to.y
         ensureVisibility(self)
         Core.Redraw = true
         self.ticks = 0
@@ -280,14 +296,13 @@ function DocumentView:onMouseUp(button,x,y)
 end
 
 function DocumentView:onMouseMove(x,y)
+    DocumentView.super.onMouseMove(self,x,y)
     if self:isWithinBounds(x,y) and self.document ~= nil and self.mouseDown then
         local padding = (#tostring(#self.document.lines)*8)+8
         self.selection.to.y = (self.scrollPos.dest.y+y+16)//16
         self.selection.to.y = math.floor(math.min(#self.document.lines,self.selection.to.y))
         self.selection.to.x = (self.scrollPos.dest.x+(x-padding)+8)//8
         self.selection.to.x = math.floor(math.max(1,math.min(#self.document.lines[self.selection.to.y]+1,self.selection.to.x)))
-        self.caretPos.x = self.selection.to.x
-        self.caretPos.y = self.selection.to.y
         ensureVisibility(self)
         Core.Redraw = 1
         self.ticks = 0
@@ -296,12 +311,11 @@ end
 
 function DocumentView:onTextType(k)
     if self.document ~= nil and Core.CommandBar.destHeight < 32 then
-        local text = self.document.lines[self.caretPos.y]
-        text = text:sub(1,self.caretPos.x-1)..k..text:sub(self.caretPos.x)
-        self.document.lines[self.caretPos.y] = text
-        self.caretPos.x = self.caretPos.x + 1
-        self.selection.to.x = self.caretPos.x
-        self.selection.from.x = self.caretPos.x
+        local text = self.document.lines[self.selection.to.y]
+        text = text:sub(1,self.selection.to.x-1)..k..text:sub(self.selection.to.x)
+        self.document.lines[self.selection.to.y] = text
+        self.selection.to.x = self.selection.to.x + 1
+        self.selection.from.x = self.selection.to.x
         self.ticks = 0
         ensureVisibility(self)
         Core.Redraw = true

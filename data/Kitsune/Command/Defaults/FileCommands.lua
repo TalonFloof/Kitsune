@@ -43,7 +43,8 @@ end
 Commands.Add {
     ["file:new"] = function()
         Core.DocumentView.document = {lines={""}}
-        Core.DocumentView.caretPos = {x=1,y=1}
+        Core.DocumentView.selection = {from={x=1,y=1},to={x=1,y=1}}
+        Core.DocumentView.scrollPos.dest = {x=0,y=0}
         Core.Redraw = true
     end,
     ["file:open"] = function()
@@ -55,8 +56,8 @@ Commands.Add {
                 Core.StatusBar:displayAlert("An unknown error occured while opening the file")
             elseif result then
                 Core.DocumentView.document = val
-                Core.DocumentView.caretPos = {x=1,y=1}
                 Core.DocumentView.selection = {from={x=1,y=1},to={x=1,y=1}}
+                Core.DocumentView.scrollPos.dest = {x=0,y=0}
             end
         end,fileSuggest)
     end,

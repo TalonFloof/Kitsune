@@ -1,4 +1,5 @@
 local Command = require "Kitsune.Command"
+local Core = require "Kitsune"
 
 local Keybind = {}
 
@@ -41,6 +42,9 @@ function Keybind.GetKeybind(cmd)
 end
 
 function Keybind.onKeyPress(k)
+    if Core.CommandBar.destHeight > 0 then
+        return false
+    end
     local mk = ModKeymap[k]
     if mk then
         Keybind.ModKeys[mk] = true
