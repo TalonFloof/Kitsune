@@ -2,7 +2,7 @@
 
 ---
 
-<img src="docs/Windows Screenshot.png" width="320px"><img src="docs/Arch Linux Screenshot.png" width="320px">
+<!--<img src="docs/Windows Screenshot.png" width="320px">--><img src="docs/Arch Linux Screenshot.png" width="320px">
 
 # About
 
