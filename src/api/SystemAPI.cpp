@@ -1,5 +1,6 @@
 #include <dirent.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 namespace Kitsune::API::System {
     int ListDirectory(lua_State* L) {
@@ -22,6 +23,12 @@ namespace Kitsune::API::System {
         }
         closedir(dir);
         return 1;
+    }
+    int ChangeCurrentWorkingDirectory(lua_State *L) {
+        const char *path = luaL_checkstring(L, 1);
+        int err = chdir(path);
+        if (err) { luaL_error(L, "Failed to change Current Working Directory"); }
+        return 0;
     }
     int GetFileInformation(lua_State* L) {
         const char *path = luaL_checkstring(L, 1);
@@ -47,6 +54,7 @@ namespace Kitsune::API::System {
 
     static const luaL_Reg lib[] = {
         {"ListDirectory", ListDirectory},
+        {"ChangeCurrentWorkingDirectory",ChangeCurrentWorkingDirectory},
         {"GetFileInformation", GetFileInformation},
         {NULL, NULL}
     };

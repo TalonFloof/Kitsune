@@ -2,11 +2,7 @@ local Command = require "Kitsune.Command"
 
 local Keybind = {}
 
-Keybind.Bindings = {
-    ["ctrl+shift+p"] = "core:run_command",
-    ["f11"] = "core:toggle_fullscreen",
-    ["ctrl+s"] = "file:save"
-}
+Keybind.Bindings = {}
 Keybind.ModKeys = {}
 
 local ModKeymap = {
@@ -27,6 +23,21 @@ local function convertKeyToStrokeName(k)
         end
     end
     return stroke .. k
+end
+
+function Keybind.Add(map)
+    for seq, cmd in pairs(map) do
+        Keybind.Bindings[seq] = cmd
+    end
+end
+
+function Keybind.GetKeybind(cmd)
+    for i,j in pairs(Keybind.Bindings) do
+        if j == cmd then
+            return i
+        end
+    end
+    return nil
 end
 
 function Keybind.onKeyPress(k)

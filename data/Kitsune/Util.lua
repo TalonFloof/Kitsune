@@ -37,4 +37,23 @@ function util.FuzzyMatchTable(tab,pattern)
     return result
 end
 
+function util.GetColor(str)
+    local r, g, b, a = str:match("#(%x%x)(%x%x)(%x%x)")
+    if r then
+        r = tonumber(r, 16)
+        g = tonumber(g, 16)
+        b = tonumber(b, 16)
+        a = 1
+    elseif str:match("rgba?%s*%([%d%s%.,]+%)") then
+        local f = str:gmatch("[%d.]+")
+        r = (f() or 0)
+        g = (f() or 0)
+        b = (f() or 0)
+        a = f() or 1
+    else
+        error("Invalid Color!")
+    end
+    return r, g, b, a * 0xff
+end
+
 return util

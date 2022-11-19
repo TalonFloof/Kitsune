@@ -1,5 +1,6 @@
 local Element = require "Kitsune.Element"
 local Core = require "Kitsune"
+local Theme = require "Kitsune.Theme"
 
 local CommandBar = Element:extend()
 
@@ -47,24 +48,24 @@ end
 
 function CommandBar:draw()
     Renderer.PushClipArea(self.pos.x,self.pos.y,self.size.w,self.size.h)
-    self:drawBackground(0x24,0x22,0x23,255)
-    Renderer.Rect(self.pos.x,self.pos.y+self.size.h-31,self.size.w,31,0x34,0x32,0x33,255)
-    Renderer.Text(8,self.pos.y+self.size.h-(math.min(32,self.size.h)/2+8),1,self.promptMsg..self.prompt,255,255,255)
+    self:drawBackground(Theme.commandBackground)
+    Renderer.Rect(self.pos.x,self.pos.y+self.size.h-31,self.size.w,31,Theme.docBackground)
+    Renderer.Text(8,self.pos.y+self.size.h-(math.min(32,self.size.h)/2+8),1,self.promptMsg..self.prompt,Theme.docText)
     if self.ticks % 48 < 24 then
-        Renderer.Rect(8+(#(self.promptMsg..self.prompt)*8),self.pos.y+self.size.h-(math.min(32,self.size.h)/2+8),2,16,0x61,0xef,0xce,255)
+        Renderer.Rect(8+(#(self.promptMsg..self.prompt)*8),self.pos.y+self.size.h-(math.min(32,self.size.h)/2+8),2,16,Theme.caret)
     end
     local maxLength = math.floor(self.size.w*.75)//8
     for i,j in ipairs(self.suggestions) do
         if #self.suggestions-(self.suggestionIndex-1) == i then
-            Renderer.Rect(0,self.pos.y+((i-1)*16),self.size.w,16,0x38,0x36,0x37,255)
+            Renderer.Rect(0,self.pos.y+((i-1)*16),self.size.w,16,Theme.commandHighlight)
         end
         if #j.text > maxLength then
-            Renderer.Text(0,self.pos.y+((i-1)*16),1,"..."..j.text:sub(#j.text-maxLength+3,#j.text),0xc4,0xb3,0x98)
+            Renderer.Text(0,self.pos.y+((i-1)*16),1,"..."..j.text:sub(#j.text-maxLength+3,#j.text),Theme.text)
         else
-            Renderer.Text(0,self.pos.y+((i-1)*16),1,j.text,0xc4,0xb3,0x98)
+            Renderer.Text(0,self.pos.y+((i-1)*16),1,j.text,Theme.text)
         end
         local str = j.keybind or ""
-        Renderer.Text(self.size.w-(#str*8),self.pos.y+((i-1)*16),1,str,0x61,0x5d,0x5f)
+        Renderer.Text(self.size.w-(#str*8),self.pos.y+((i-1)*16),1,str,Theme.dimText)
     end
     Renderer.PopClipArea()
 end

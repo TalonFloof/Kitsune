@@ -6,28 +6,41 @@ namespace Kitsune::API::Renderer {
     static std::unordered_map<std::string, SDL_Surface*> TextureRegistry;
     static std::vector<SDL_Rect> ClipStack;
 
+    typedef struct {
+        int r;
+        int g;
+        int b;
+        int a;
+    } Color;
+
+    Color GetColor(lua_State* L, int index) {
+        Color color;
+        lua_rawgeti(L, index, 1);
+        lua_rawgeti(L, index, 2);
+        lua_rawgeti(L, index, 3);
+        lua_rawgeti(L, index, 4);
+        color.r = luaL_checknumber(L, -4);
+        color.g = luaL_checknumber(L, -3);
+        color.b = luaL_checknumber(L, -2);
+        color.a = luaL_optnumber(L, -1, 255);
+        lua_pop(L, 4);
+        return color;
+    }
+
     int ClearScreen(lua_State* L) {
-        int r,g,b,a;
-        r = luaL_checknumber(L, 1);
-        g = luaL_checknumber(L, 2);
-        b = luaL_checknumber(L, 3);
-        a = luaL_checknumber(L, 4);
-        SDL_SetRenderDrawColor(Kitsune::Applet::appletRenderer, r, g, b, a);
+        Color color = GetColor(L,1);
+        SDL_SetRenderDrawColor(Kitsune::Applet::appletRenderer, color.r, color.g, color.b, color.a);
         SDL_RenderClear(Kitsune::Applet::appletRenderer);
         return 0;
     }
     int DrawRect(lua_State* L) {
-        int r,g,b,a;
         SDL_Rect coords;
         coords.x = luaL_checknumber(L, 1);
         coords.y = luaL_checknumber(L, 2);
         coords.w = luaL_checknumber(L, 3);
         coords.h = luaL_checknumber(L, 4);
-        r = luaL_checknumber(L, 5);
-        g = luaL_checknumber(L, 6);
-        b = luaL_checknumber(L, 7);
-        a = luaL_checknumber(L, 8);
-        SDL_SetRenderDrawColor(Kitsune::Applet::appletRenderer, r, g, b, a);
+        Color color = GetColor(L,5);
+        SDL_SetRenderDrawColor(Kitsune::Applet::appletRenderer, color.r, color.g, color.b, color.a);
         SDL_RenderFillRect(Kitsune::Applet::appletRenderer, &coords);
         return 0;
     }
@@ -50,11 +63,9 @@ namespace Kitsune::API::Renderer {
         y = luaL_checknumber(L, 2);
         scale = luaL_checknumber(L, 3);
         const char *text = luaL_checkstring(L, 4);
-        r = luaL_checknumber(L, 5);
-        g = luaL_checknumber(L, 6);
-        b = luaL_checknumber(L, 7);
+        Color color = GetColor(L,5);
         for(int i=0; i < strlen(text); i++) {
-            DrawGlyph(x+(i*(8*scale)),y,scale,(uint8_t)text[i],r,g,b);
+            DrawGlyph(x+(i*(8*scale)),y,scale,(uint8_t)text[i],color.r,color.g,color.b);
         }
         return 0;
     }

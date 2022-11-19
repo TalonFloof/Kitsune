@@ -1,4 +1,5 @@
 local Commands = require 'Kitsune.Command'
+local Keybinds = require 'Kitsune.Command.Keybind'
 local Core = require 'Kitsune'
 local Utils = require 'Kitsune.Util'
 
@@ -15,7 +16,8 @@ Commands.Add {
                 result[i] = {
                     text = Commands.StylizeName(name.text),
                     cmd = name.text,
-                    score = name.points
+                    score = name.points,
+                    keybind = Keybinds.GetKeybind(name.text)
                 }
             end
             return result
@@ -24,4 +26,9 @@ Commands.Add {
     ["core:toggle_fullscreen"] = function()
         Applet.ToggleFullscreen()
     end
+}
+
+Keybinds.Add {
+    ["ctrl+shift+p"] = "core:run_command",
+    ["f11"] = "core:toggle_fullscreen"
 }

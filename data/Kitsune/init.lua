@@ -6,6 +6,12 @@ core.Redraw = true
 core.Cursor = "Default"
 core.MousePos = {x=0,y=0}
 
+function core.try(f)
+    xpcall(f,function(e)
+        core.StatusBar:displayAlert(e)
+    end)
+end
+
 function core.Initialize()
     local StatusBar = require "Kitsune.StatusBar"
     local DocView = require "Kitsune.DocumentView"
@@ -27,14 +33,14 @@ function core.Initialize()
     if not Renderer.LoadImage("Kitsune:LogoSymbolic",EXEC_DIR.."/data/Assets/KitsuneSymbolic.svg") then
         error("Failed to load image Kitsune:LogoSymbolic!")
     end
-
     Command.InitializeBuiltins()
+    require "User"
 end
 
 function core.Run()
     local frameStart = Applet.GetMillis()
     while true do
-        if core.Redraw then
+        if core.Redraw == true then
             core.DocumentView:draw()
             core.StatusBar:draw()
             core.CommandBar:draw()
@@ -74,6 +80,9 @@ function core.Run()
                     core.DocumentView:onTextType(event[2])
                 elseif event[1] == "AppletMouseDown" then
                     core.CommandBar:onMouseDown(event[2],event[3],event[4],event[5])
+                    core.DocumentView:onMouseDown(event[2],event[3],event[4],event[5])
+                elseif event[1] == "AppletMouseUp" then
+                    core.DocumentView:onMouseUp(event[2],event[3],event[4])
                 end
             else
                 Applet.Sleep(math.max(0, 1 / 60 - (Applet.GetMillis() - frameStart)))
@@ -82,6 +91,12 @@ function core.Run()
         if Applet.GetMillis() - frameStart >= 1 / 60 then
             Applet.Sleep(math.max(0, 1 / 60 - (Applet.GetMillis() - frameStart)))
             frameStart = Applet.GetMillis()
+            if type(core.Redraw) == "number" then
+                core.Redraw = core.Redraw - 1
+                if core.Redraw == 0 then
+                    core.Redraw = true
+                end
+            end
             core.DocumentView:tick()
             core.StatusBar:tick()
             core.CommandBar:tick()
