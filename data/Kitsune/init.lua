@@ -125,9 +125,6 @@ function core.Step()
     local event = table.pack(Applet.PollEvent())
     local max_time = 1 / 60 - 0.004
     while #event > 0 do
-        if Applet.GetMillis() - core.frameStart > max_time then
-            return didRedraw
-        end
         if event[1] == "AppletQuit" then
             core.Exit = true
             return didRedraw
@@ -165,6 +162,9 @@ function core.Step()
             if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseDown(event[2],event[3],event[4],event[5]) end
         elseif event[1] == "AppletMouseUp" then
             if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseUp(event[2],event[3],event[4]) end
+        end
+        if Applet.GetMillis() - core.frameStart > max_time then
+            return didRedraw
         end
         event = table.pack(Applet.PollEvent())
     end
