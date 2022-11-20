@@ -12,6 +12,7 @@ core.Cursor = "Default"
 core.MousePos = {x=0,y=0}
 core.Threads = {}
 core.Tickables = {}
+core.Exit = false
 
 function core.try(f)
     xpcall(f,function(e)
@@ -37,7 +38,9 @@ function core.Initialize()
     local DebugCon = require "Kitsune.DebugConsole"
     Keybind = require "Kitsune.Command.Keybind"
     core.StatusBar = StatusBar()
-    --core.StatusBar:OpenTab("Test 1",DocView(#STARTUP_FILE > 0 and STARTUP_FILE or nil))
+    if #STARTUP_FILE > 0 then
+        core.StatusBar:OpenTab(DocView(STARTUP_FILE))
+    end
     core.StatusBar:resizeTabElement(Applet.GetResolution())
     --core.DocumentView = DocView(#STARTUP_FILE > 0 and STARTUP_FILE or nil)
     core.CommandBar = CmdBar()
@@ -66,6 +69,7 @@ function core.Run()
     while true do
         core.frameStart = Applet.GetMillis()
         local redrawTriggered = core.Step()
+        if core.Exit then break end
         core.ThreadStep()
         for _,i in ipairs(core.Tickables) do i:tick() end
         core.StatusBar:getCurrent():tick()
@@ -108,6 +112,7 @@ core.ThreadStep = coroutine.wrap(function()
 end)
 
 function core.Step()
+    local didRedraw = false
     if core.Redraw == true then
         core.StatusBar:draw()
         core.CommandBar:draw()
@@ -115,55 +120,55 @@ function core.Step()
         Renderer.ClearClipStack() -- Just in case...
         Renderer.Invalidate()
         core.Redraw = false
-        return true
-    else
-        local event = table.pack(Applet.PollEvent())
-        local max_time = 1 / 60 - 0.004
-        while #event > 0 do
-            if Applet.GetMillis() - core.frameStart > max_time then
-                return false
-            end
-            if event[1] == "AppletQuit" then
-                os.exit()
-            elseif event[1] == "AppletResized" then
-                core.StatusBar:resizeTabElement(event[2],event[3])
-                core.StatusBar.pos.y = event[3]-32
-                core.StatusBar.size.w = event[2]
-                core.CommandBar.pos.y = event[3]-32
-                core.CommandBar.sourceY = event[3]-32
-                core.CommandBar.size.w = event[2]
-                core.DebugConsole.size.w = event[2]
-                core.DebugConsole.maxHeight = event[3]//3
-                core.Redraw = true
-            elseif event[1] == "AppletMouseMoved" then
-                if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseMove(event[2],event[3]) end
-                core.StatusBar:onMouseMove(event[2],event[3])
-                core.MousePos.x = event[2]
-                core.MousePos.y = event[3]
-            elseif event[1] == "AppletMouseScroll" then
-                if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseScroll(core.MousePos.x,core.MousePos.y,event[2]) end
-                core.StatusBar:onMouseScroll(core.MousePos.x,core.MousePos.y,event[2])
-            elseif event[1] == "AppletKeyDown" then
-                Keybind.onKeyPress(event[2])
-                core.CommandBar:onKeyPress(event[2])
-                core.DebugConsole:onKeyPress(event[2])
-            elseif event[1] == "AppletKeyUp" then
-                Keybind.onKeyRelease(event[2])
-            elseif event[1] == "AppletText" then
-                core.CommandBar:onTextType(event[2])
-                if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onTextType(event[2]) end
-                core.DebugConsole:onTextType(event[2])
-            elseif event[1] == "AppletMouseDown" then
-                core.CommandBar:onMouseDown(event[2],event[3],event[4],event[5])
-                core.StatusBar:onMouseDown(event[2],event[3],event[4],event[5])
-                if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseDown(event[2],event[3],event[4],event[5]) end
-            elseif event[1] == "AppletMouseUp" then
-                if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseUp(event[2],event[3],event[4]) end
-            end
-            event = table.pack(Applet.PollEvent())
-        end
+        didRedraw = true
     end
-    return false
+    local event = table.pack(Applet.PollEvent())
+    local max_time = 1 / 60 - 0.004
+    while #event > 0 do
+        if Applet.GetMillis() - core.frameStart > max_time then
+            return didRedraw
+        end
+        if event[1] == "AppletQuit" then
+            core.Exit = true
+            return didRedraw
+        elseif event[1] == "AppletResized" then
+            core.StatusBar:resizeTabElement(event[2],event[3])
+            core.StatusBar.pos.y = event[3]-32
+            core.StatusBar.size.w = event[2]
+            core.CommandBar.pos.y = event[3]-32
+            core.CommandBar.sourceY = event[3]-32
+            core.CommandBar.size.w = event[2]
+            core.DebugConsole.size.w = event[2]
+            core.DebugConsole.maxHeight = event[3]//3
+            core.Redraw = true
+        elseif event[1] == "AppletMouseMoved" then
+            if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseMove(event[2],event[3]) end
+            core.StatusBar:onMouseMove(event[2],event[3])
+            core.MousePos.x = event[2]
+            core.MousePos.y = event[3]
+        elseif event[1] == "AppletMouseScroll" then
+            if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseScroll(core.MousePos.x,core.MousePos.y,event[2]) end
+            core.StatusBar:onMouseScroll(core.MousePos.x,core.MousePos.y,event[2])
+        elseif event[1] == "AppletKeyDown" then
+            Keybind.onKeyPress(event[2])
+            core.CommandBar:onKeyPress(event[2])
+            core.DebugConsole:onKeyPress(event[2])
+        elseif event[1] == "AppletKeyUp" then
+            Keybind.onKeyRelease(event[2])
+        elseif event[1] == "AppletText" then
+            core.CommandBar:onTextType(event[2])
+            if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onTextType(event[2]) end
+            core.DebugConsole:onTextType(event[2])
+        elseif event[1] == "AppletMouseDown" then
+            core.CommandBar:onMouseDown(event[2],event[3],event[4],event[5])
+            core.StatusBar:onMouseDown(event[2],event[3],event[4],event[5])
+            if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseDown(event[2],event[3],event[4],event[5]) end
+        elseif event[1] == "AppletMouseUp" then
+            if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseUp(event[2],event[3],event[4]) end
+        end
+        event = table.pack(Applet.PollEvent())
+    end
+    return didRedraw
 end
 
 return core
