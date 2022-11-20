@@ -57,13 +57,15 @@ function CommandBar:draw()
     end
     local maxLength = math.floor(self.size.w*.75)//8
     for i,j in ipairs(self.suggestions) do
+        local textColor = Theme.text
         if #self.suggestions-(self.suggestionIndex-1) == i then
+            textColor = Theme.lightText
             Renderer.Rect(0,self.pos.y+((i-1)*16),self.size.w,16,Theme.commandHighlight)
         end
         if #j.text > maxLength then
-            Renderer.Text(0,self.pos.y+((i-1)*16),1,"..."..j.text:sub(#j.text-maxLength+3,#j.text),Theme.text)
+            Renderer.Text(0,self.pos.y+((i-1)*16),1,"..."..j.text:sub(#j.text-maxLength+3,#j.text),textColor)
         else
-            Renderer.Text(0,self.pos.y+((i-1)*16),1,j.text,Theme.text)
+            Renderer.Text(0,self.pos.y+((i-1)*16),1,j.text,textColor)
         end
         local str = j.keybind or ""
         Renderer.Text(self.size.w-(#str*8),self.pos.y+((i-1)*16),1,str,Theme.dimText)

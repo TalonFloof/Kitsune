@@ -37,6 +37,10 @@ function Element:drawBackground(r,g,b,a)
     Renderer.Rect(x, y, w + x % 1, h + y % 1, r, g, b, a)
 end
 
+function Element:getName()
+    return "undefined"
+end
+
 function Element:isWithinBounds(x,y) return x > self.pos.x and x < self.pos.x+self.size.w and y >=self.pos.y and y < self.pos.y+self.size.h end
 
 function Element:onMouseMove(x,y)

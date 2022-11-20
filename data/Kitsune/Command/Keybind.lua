@@ -55,6 +55,9 @@ function Keybind.onKeyPress(k)
         local stroke = convertKeyToStrokeName(k)
         local command = Keybind.Bindings[stroke]
         if command then
+            if Core.DebugConsole.destHeight > 0 and command ~= "core:open_debug_console" then
+                return false
+            end
             return Command.Execute(command)
         end
     end

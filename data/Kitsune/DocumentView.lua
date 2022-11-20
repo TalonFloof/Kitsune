@@ -23,7 +23,7 @@ function DocumentView.OpenDoc(doc)
     return xpcall(function()
         if doc ~= nil then
             local lineIterator = io.lines(doc)
-            local retValue = {lines={},path=doc}
+            local retValue = {lines={},path=doc,unsavedChanges=false}
             for i in lineIterator do
                 table.insert(retValue.lines,tostring(i:gsub("[\t]","    ")))
             end
@@ -66,47 +66,35 @@ end
 function DocumentView:draw()
     Renderer.PushClipArea(self.pos.x,self.pos.y,self.size.w,self.size.h)
     self:drawBackground(Theme.docBackground)
-    if self.document ~= nil then
-        self.cursor = "Caret"
-        local min, max = self:getLineRange()
-        local padding = (#tostring(#self.document.lines)*8)+8
-        for i=min,max do
-            if self.selection.to.y == i and Core.CommandBar.destHeight < 32 and Applet.IsFocused() and self.selection.to.x == self.selection.from.x and self.selection.to.y == self.selection.from.y then
-                Renderer.Rect(self.pos.x+padding,((i-1)*16)-self.scrollPos.y,self.size.w-padding,16,Theme.lineHighlight)
-            end
-            local x1, y1, x2, y2 = self:getSelectionRange()
-            if i >= y1 and i <= y2 then
-                if y1 ~= i then x1 = 1 end
-                if y2 ~= i then x2 = #self.document.lines[i] end
-                local X1 = (self.pos.x+padding-self.scrollPos.x)+(#self.document.lines[i]:sub(1,x1)*8)
-                local X2 = (self.pos.x+padding-self.scrollPos.x)+(#self.document.lines[i]:sub(1,x2)*8)
-                Renderer.PushClipArea(self.pos.x+padding,self.pos.y,self.size.w-padding,self.size.h)
-                Renderer.Rect(X1,((i-1)*16)-self.scrollPos.y,X2-X1,16,Theme.highlight)
-                Renderer.PopClipArea()
-            end
-            Renderer.PushClipArea(self.pos.x+padding,self.pos.y,self.size.w-padding,self.size.h)
-            Renderer.Text(self.pos.x+padding-self.scrollPos.x,((i-1)*16)-self.scrollPos.y,1,self.document.lines[i],Theme.docText)
-            Renderer.PopClipArea()
-            if self.selection.to.y == i and Core.CommandBar.destHeight < 32 and Applet.IsFocused() then
-                Renderer.Text(self.pos.x+padding/2-(#tostring(i)*4),((i-1)*16)-self.scrollPos.y+1,1,i,Theme.lineNumber2)
-            else
-                Renderer.Text(self.pos.x+padding/2-(#tostring(i)*4),((i-1)*16)-self.scrollPos.y+1,1,i,Theme.lineNumber1)
-            end
-            if self.selection.to.y == i and self.ticks % 48 < 24 and Core.CommandBar.destHeight < 32 and Applet.IsFocused() then
-                Renderer.PushClipArea(self.pos.x+padding,self.pos.y,self.size.w-padding,self.size.h)
-                Renderer.Rect(self.pos.x+padding+((self.selection.to.x-1)*8)-self.scrollPos.x,((i-1)*16)-self.scrollPos.y,2,16,Theme.caret)
-                Renderer.PopClipArea()
-            end
+    self.cursor = "Caret"
+    local min, max = self:getLineRange()
+    local padding = (#tostring(#self.document.lines)*8)+8
+    for i=min,max do
+        if self.selection.to.y == i and Core.CommandBar.destHeight < 32 and Core.DebugConsole.destHeight == 0 and Applet.IsFocused() and self.selection.to.x == self.selection.from.x and self.selection.to.y == self.selection.from.y then
+            Renderer.Rect(self.pos.x+padding,((i-1)*16)-self.scrollPos.y,self.size.w-padding,16,Theme.lineHighlight)
         end
-    else
-        self.cursor = "Default"
-        local imageSize = math.floor((self.size.h+32) / 4)
-        Renderer.Image("Kitsune:Logo",(self.size.w/2)-(imageSize/2)+self.pos.x,(self.size.h/2)-(imageSize/2)+self.pos.y,imageSize,imageSize)
-        local cmdBarMsg = "Press Ctrl+Shift+P for a list of commands"
-        if self.size.w >= #cmdBarMsg*16 then
-            Renderer.Text((self.size.w/2)-(#cmdBarMsg*8)+self.pos.x,(self.size.h/2)+(imageSize/2)+self.pos.y,2,cmdBarMsg,Theme.text)
+        local x1, y1, x2, y2 = self:getSelectionRange()
+        if i >= y1 and i <= y2 then
+            if y1 ~= i then x1 = 1 end
+            if y2 ~= i then x2 = #self.document.lines[i] + 1 end
+            local X1 = (self.pos.x+padding-self.scrollPos.x)+(#self.document.lines[i]:sub(1,x1-1)*8)
+            local X2 = (self.pos.x+padding-self.scrollPos.x)+(#self.document.lines[i]:sub(1,x2-1)*8)
+            Renderer.PushClipArea(self.pos.x+padding,self.pos.y,self.size.w-padding,self.size.h)
+            Renderer.Rect(X1,((i-1)*16)-self.scrollPos.y,X2-X1,16,Theme.highlight)
+            Renderer.PopClipArea()
+        end
+        Renderer.PushClipArea(self.pos.x+padding,self.pos.y,self.size.w-padding,self.size.h)
+        Renderer.Text(self.pos.x+padding-self.scrollPos.x,((i-1)*16)-self.scrollPos.y,1,self.document.lines[i],Theme.docText)
+        Renderer.PopClipArea()
+        if self.selection.to.y == i and Core.CommandBar.destHeight < 32 and Core.DebugConsole.destHeight == 0 and Applet.IsFocused() then
+            Renderer.Text(self.pos.x+padding/2-(#tostring(i)*4),((i-1)*16)-self.scrollPos.y+1,1,i,Theme.lineNumber2)
         else
-            Renderer.Text((self.size.w/2)-(#cmdBarMsg*4)+self.pos.x,(self.size.h/2)+(imageSize/2)+self.pos.y,1,cmdBarMsg,Theme.text)
+            Renderer.Text(self.pos.x+padding/2-(#tostring(i)*4),((i-1)*16)-self.scrollPos.y+1,1,i,Theme.lineNumber1)
+        end
+        if self.selection.to.y == i and self.ticks % 48 < 24 and Core.CommandBar.destHeight < 32 and Core.DebugConsole.destHeight == 0 and Applet.IsFocused() then
+            Renderer.PushClipArea(self.pos.x+padding,self.pos.y,self.size.w-padding,self.size.h)
+            Renderer.Rect(self.pos.x+padding+((self.selection.to.x-1)*8)-self.scrollPos.x,((i-1)*16)-self.scrollPos.y,2,16,Theme.caret)
+            Renderer.PopClipArea()
         end
     end
     Renderer.PopClipArea()
@@ -125,7 +113,7 @@ end
 
 function DocumentView:tick()
     DocumentView.super.tick(self)
-    if self.document ~= nil and Core.CommandBar.destHeight < 32 then
+    if Core.CommandBar.destHeight < 32 and Core.DebugConsole.destHeight == 0 then
         self.ticks = (self.ticks + 1) % (48*2)
         if self.ticks % 24 == 0 then
             Core.Redraw = true
@@ -134,13 +122,15 @@ function DocumentView:tick()
             ensureVisibility(self)
             self.prevPos.x, self.prevPos.y = self.selection.to.x, self.selection.to.y
         end
-    else
-        self.ticks = 0
     end
 end
 
+function DocumentView:getName()
+    return (self.document.path or "unnamed"):match("[^/%\\]*$") .. (self.document.unsavedChanges and "*" or "")
+end
+
 function DocumentView:onMouseScroll(x,y,direction)
-    if self:isWithinBounds(x,y) and self.document ~= nil then
+    if self:isWithinBounds(x,y) then
         self.scrollPos.dest.y = math.max(0,math.min(16*(#self.document.lines-1),self.scrollPos.dest.y + direction * (-50 * SCALE)))
     end
 end
@@ -276,7 +266,7 @@ function DocumentView:onKeyPress(k)
 end
 
 function DocumentView:onMouseDown(button,x,y,clicks)
-    if self:isWithinBounds(x,y) and self.document ~= nil then
+    if self:isWithinBounds(x,y) then
         self.mouseDown = true
         local padding = (#tostring(#self.document.lines)*8)+8
         self.selection.to.x = (self.scrollPos.dest.x+(x-padding)+8)//8
@@ -297,7 +287,7 @@ end
 
 function DocumentView:onMouseMove(x,y)
     DocumentView.super.onMouseMove(self,x,y)
-    if self:isWithinBounds(x,y) and self.document ~= nil and self.mouseDown then
+    if self:isWithinBounds(x,y) and self.mouseDown then
         local padding = (#tostring(#self.document.lines)*8)+8
         self.selection.to.y = (self.scrollPos.dest.y+y+16)//16
         self.selection.to.y = math.floor(math.min(#self.document.lines,self.selection.to.y))
@@ -310,7 +300,7 @@ function DocumentView:onMouseMove(x,y)
 end
 
 function DocumentView:onTextType(k)
-    if self.document ~= nil and Core.CommandBar.destHeight < 32 then
+    if Core.CommandBar.destHeight < 32 then
         local text = self.document.lines[self.selection.to.y]
         text = text:sub(1,self.selection.to.x-1)..k..text:sub(self.selection.to.x)
         self.document.lines[self.selection.to.y] = text
@@ -319,6 +309,7 @@ function DocumentView:onTextType(k)
         self.ticks = 0
         ensureVisibility(self)
         Core.Redraw = true
+        self.document.unsavedChanges = true
     end
 end
 

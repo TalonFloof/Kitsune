@@ -20,11 +20,11 @@ function core.Initialize()
     local DebugCon = require "Kitsune.DebugConsole"
     Keybind = require "Kitsune.Command.Keybind"
     core.StatusBar = StatusBar()
-    core.DocumentView = DocView(#STARTUP_FILE > 0 and STARTUP_FILE or nil)
+    --core.StatusBar:OpenTab("Test 1",DocView(#STARTUP_FILE > 0 and STARTUP_FILE or nil))
+    core.StatusBar:resizeTabElement(Applet.GetResolution())
+    --core.DocumentView = DocView(#STARTUP_FILE > 0 and STARTUP_FILE or nil)
     core.CommandBar = CmdBar()
     core.DebugConsole = DebugCon()
-    core.DocumentView.size.w = table.pack(Applet.GetResolution())[1]
-    core.DocumentView.size.h = table.pack(Applet.GetResolution())[2]-32
     core.StatusBar.pos.y = table.pack(Applet.GetResolution())[2]-32
     core.StatusBar.size.w = table.pack(Applet.GetResolution())[1]
     core.CommandBar.size.w = table.pack(Applet.GetResolution())[1]
@@ -46,7 +46,6 @@ function core.Run()
     local frameStart = Applet.GetMillis()
     while true do
         if core.Redraw == true then
-            core.DocumentView:draw()
             core.StatusBar:draw()
             core.CommandBar:draw()
             core.DebugConsole:draw()
@@ -59,8 +58,7 @@ function core.Run()
                 if event[1] == "AppletQuit" then
                     break
                 elseif event[1] == "AppletResized" then
-                    core.DocumentView.size.w = event[2]
-                    core.DocumentView.size.h = event[3]-32
+                    core.StatusBar:resizeTabElement(event[2],event[3])
                     core.StatusBar.pos.y = event[3]-32
                     core.StatusBar.size.w = event[2]
                     core.CommandBar.pos.y = event[3]-32
@@ -70,27 +68,26 @@ function core.Run()
                     core.DebugConsole.maxHeight = event[3]//3
                     core.Redraw = true
                 elseif event[1] == "AppletMouseMoved" then
-                    core.DocumentView:onMouseMove(event[2],event[3])
+                    if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseMove(event[2],event[3]) end
                     core.StatusBar:onMouseMove(event[2],event[3])
                     core.MousePos.x = event[2]
                     core.MousePos.y = event[3]
                 elseif event[1] == "AppletMouseScroll" then
-                    core.DocumentView:onMouseScroll(core.MousePos.x,core.MousePos.y,event[2])
+                    if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseScroll(core.MousePos.x,core.MousePos.y,event[2]) end
                     core.StatusBar:onMouseScroll(core.MousePos.x,core.MousePos.y,event[2])
                 elseif event[1] == "AppletKeyDown" then
                     Keybind.onKeyPress(event[2])
                     core.CommandBar:onKeyPress(event[2])
-                    core.DocumentView:onKeyPress(event[2])
                 elseif event[1] == "AppletKeyUp" then
                     Keybind.onKeyRelease(event[2])
                 elseif event[1] == "AppletText" then
                     core.CommandBar:onTextType(event[2])
-                    core.DocumentView:onTextType(event[2])
+                    if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onTextType(event[2]) end
                 elseif event[1] == "AppletMouseDown" then
                     core.CommandBar:onMouseDown(event[2],event[3],event[4],event[5])
-                    core.DocumentView:onMouseDown(event[2],event[3],event[4],event[5])
+                    if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseDown(event[2],event[3],event[4],event[5]) end
                 elseif event[1] == "AppletMouseUp" then
-                    core.DocumentView:onMouseUp(event[2],event[3],event[4])
+                    if core.StatusBar.tabs[core.StatusBar.currentTab] then core.StatusBar:getCurrent():onMouseUp(event[2],event[3],event[4]) end
                 end
             else
                 Applet.Sleep(math.max(0, 1 / 60 - (Applet.GetMillis() - frameStart)))
@@ -105,7 +102,7 @@ function core.Run()
                     core.Redraw = true
                 end
             end
-            core.DocumentView:tick()
+            core.StatusBar:getCurrent():tick()
             core.StatusBar:tick()
             core.CommandBar:tick()
             core.DebugConsole:tick()
