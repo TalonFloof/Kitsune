@@ -26,9 +26,9 @@ namespace Kitsune::API::Applet {
                     lua_pushnumber(L, e.window.data1);
                     lua_pushnumber(L, e.window.data2);
                     return 3;
-                } else if (e.window.event == SDL_WINDOWEVENT_EXPOSED) {
+                /*} else if (e.window.event == SDL_WINDOWEVENT_EXPOSED) {
                     lua_pushstring(L, "AppletExposed");
-                    return 1;
+                    return 1;*/
                 } else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) { // For compatibility
                     SDL_FlushEvent(SDL_KEYDOWN);
                 }

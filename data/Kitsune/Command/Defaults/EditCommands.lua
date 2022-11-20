@@ -30,6 +30,24 @@ local function moveToLine(self, x, y, offset)
     self.selection.from.y = y
 end
 
+local function splice(t, at, remove, insert)
+    insert = insert or {}
+    local offset = #insert - remove
+    local old_len = #t
+    if offset < 0 then
+        for i = at - offset, old_len - offset do
+            t[i + offset] = t[i]
+        end
+    elseif offset > 0 then
+        for i = old_len, at, -1 do
+            t[i + offset] = t[i]
+        end
+    end
+    for i, item in ipairs(insert) do
+        t[at + i - 1] = item
+    end
+end
+
 Commands.Add {
     ["edit:move_to_prev_char"] = function()
         if #Core.StatusBar.tabs ~= 0 then
@@ -76,7 +94,15 @@ Commands.Add {
     ["edit:backspace"] = function()
         if #Core.StatusBar.tabs ~= 0 then
             if Core.StatusBar:getCurrent().selection.to.x ~= Core.StatusBar:getCurrent().selection.from.x or Core.StatusBar:getCurrent().selection.to.y ~= Core.StatusBar:getCurrent().selection.from.y then
-                print("Selection Removal")
+                local x1,y1,x2,y2 = Core.StatusBar:getCurrent():getSelectionRange()
+                local l1 = Core.StatusBar:getCurrent().document.lines[y1]:sub(1, x1 - 1)
+                local l2 = Core.StatusBar:getCurrent().document.lines[y2]:sub(x2)
+                splice(Core.StatusBar:getCurrent().document.lines, y1, y2 - y1 + 1, { l1 .. l2 })
+                Core.StatusBar:getCurrent().ticks = 0
+                Core.Redraw = true
+                Core.StatusBar:getCurrent().document.unsavedChanges = true
+                local x,y = Core.StatusBar:getCurrent():clampPosition(x1,y1)
+                Core.StatusBar:getCurrent().selection = {from={x=x,y=y},to={x=x,y=y}}
             elseif Core.StatusBar:getCurrent().selection.to.x > 1 then
                 local text = Core.StatusBar:getCurrent().document.lines[Core.StatusBar:getCurrent().selection.to.y]
                 text = text:sub(1,Core.StatusBar:getCurrent().selection.to.x-2)..text:sub(Core.StatusBar:getCurrent().selection.to.x)

@@ -20,6 +20,7 @@ function StatusBar:OpenTab(name,element)
     element.size.w = table.pack(Applet.GetResolution())[1]
     element.size.h = table.pack(Applet.GetResolution())[2]-32
     table.insert(self.tabs,element)
+    self.currentTab = #self.tabs
 end
 
 function StatusBar:CloseTab()
@@ -80,7 +81,7 @@ function StatusBar:draw()
                 local w = math.min(170, math.ceil(self.size.w / #self.tabs))
                 local x = self.pos.x + (i-1) * w
                 if i == self.currentTab then
-                    Renderer.Rect(x,self.pos.y+32-self.scrollPos.y,w,32,Theme.docBackground)
+                    Renderer.Rect(x,self.pos.y+32-self.scrollPos.y,w,32,Theme.highlight)
                 end
                 Renderer.Text(x+(w/2)-((#j:getName()*8)//2),self.pos.y+40-self.scrollPos.y,1,j:getName(),Theme.text)
             end
@@ -121,6 +122,22 @@ function StatusBar:onMouseMove(x,y)
         self.scrollPos.dest.y = 32
     elseif self.alertTimer <= 0 then
         self.scrollPos.dest.y = 0
+    end
+end
+
+function StatusBar:onMouseDown(button,x,y,clicks)
+    if self:isWithinBounds(x,y) then
+        if #self.tabs > 0 and self.scrollPos.dest.y > 0 then
+            for i,j in ipairs(self.tabs) do
+                local w = math.min(170, math.ceil(self.size.w / #self.tabs))
+                local X = self.pos.x + (i-1) * w
+                if x > X and x < X+w then
+                    self.currentTab = i
+                    Core.Redraw = true
+                    break
+                end
+            end
+        end
     end
 end
 

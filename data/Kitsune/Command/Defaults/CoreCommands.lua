@@ -28,6 +28,10 @@ Commands.Add {
     end,
     ["core:open_debug_console"] = function()
         Core.DebugConsole.destHeight = (Core.DebugConsole.destHeight == 0 and Core.DebugConsole.maxHeight or 0)
+        if Core.DebugConsole.destHeight > 0 then
+            Core.DebugConsole:ResetInstance()
+            Core.DebugConsole.lines = {}
+        end
     end
 }
 

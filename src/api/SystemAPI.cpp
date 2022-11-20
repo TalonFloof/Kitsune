@@ -1,6 +1,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 namespace Kitsune::API::System {
     int ListDirectory(lua_State* L) {
@@ -51,25 +52,11 @@ namespace Kitsune::API::System {
         lua_setfield(L, -2, "type");
         return 1;
     }
-    static int CreatePipe(lua_State* L) {
-        luaL_Stream inpipe;
-        luaL_Stream outpipe;
-        int fd[2];
-        pipe2(&fd,O_NONBLOCK | O_CLOEXEC);
-
-    }
-    int ClosePipe(lua_State* L) {
-        luaL_Stream* stream;
-        
-        lua_pushboolean(1);
-        return 1;
-    }
 
     static const luaL_Reg lib[] = {
         {"ListDirectory", ListDirectory},
         {"ChangeCurrentWorkingDirectory",ChangeCurrentWorkingDirectory},
         {"GetFileInformation", GetFileInformation},
-        {"CreatePipe", CreatePipe}
         {NULL, NULL}
     };
 

@@ -300,7 +300,7 @@ function DocumentView:onMouseMove(x,y)
 end
 
 function DocumentView:onTextType(k)
-    if Core.CommandBar.destHeight < 32 then
+    if Core.CommandBar.destHeight < 32 and Core.DebugConsole.destHeight == 0 then
         local text = self.document.lines[self.selection.to.y]
         text = text:sub(1,self.selection.to.x-1)..k..text:sub(self.selection.to.x)
         self.document.lines[self.selection.to.y] = text
