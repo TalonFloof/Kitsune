@@ -74,6 +74,27 @@ Commands.Add {
     end,
     ["edit:backspace"] = function()
         if Core.DocumentView.document ~= nil then
+            if Core.DocumentView.selection.to.x > 1 then
+                local text = Core.DocumentView.document.lines[Core.DocumentView.selection.to.y]
+                text = text:sub(1,Core.DocumentView.selection.to.x-2)..text:sub(Core.DocumentView.selection.to.x)
+                Core.DocumentView.document.lines[Core.DocumentView.selection.to.y] = text
+                Core.DocumentView.selection.to.x = math.max(1,Core.DocumentView.selection.to.x - 1)
+                Core.DocumentView.selection.from.x = Core.DocumentView.selection.to.x
+                Core.DocumentView.ticks = 0
+                Core.Redraw = true
+            elseif Core.DocumentView.selection.to.x <= 1 and Core.DocumentView.selection.to.y > 1 then
+                local text = Core.DocumentView.document.lines[Core.DocumentView.selection.to.y]
+                if Core.DocumentView.selection.to.y-1 >= 1 then
+                    Core.DocumentView.document.lines[Core.DocumentView.selection.to.y-1] = Core.DocumentView.document.lines[Core.DocumentView.selection.to.y-1] .. text
+                end
+                Core.DocumentView.selection.to.y = Core.DocumentView.selection.to.y - 1
+                Core.DocumentView.selection.to.x = #Core.DocumentView.document.lines[Core.DocumentView.selection.to.y]-#text+1
+                Core.DocumentView.selection.from.x = Core.DocumentView.selection.to.x
+                Core.DocumentView.selection.from.y = Core.DocumentView.selection.to.y
+                table.remove(Core.DocumentView.document.lines,Core.DocumentView.selection.to.y+1)
+                Core.DocumentView.ticks = 0
+                Core.Redraw = true
+            end
         end
     end
 }
